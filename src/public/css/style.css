@@ -121,6 +121,14 @@ nav {
   align-items: center;
 }
 
+.settings-section input {
+  margin-bottom: 0.3rem;
+}
+
+.settings-section label {
+  margin-bottom: 0.3rem;
+}
+
 nav .logo {
   display: flex;
   align-items: center;
@@ -151,10 +159,13 @@ button.btn {
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background-color: var(--rosewater);
   color: var(--base);
   cursor: pointer;
-  padding: 0.5rem 1rem 0.7rem;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
   font-weight: 500;
   text-decoration: none;
