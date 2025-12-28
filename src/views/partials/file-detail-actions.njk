@@ -1,0 +1,20 @@
+{% from "partials/icons.njk" import edit as editIcon, download as downloadIcon, trash as trashIcon %}
+
+{% macro fileDetailActions(file) %}
+<div class="file-detail-actions">
+  <a href="/files/edit/{{ file.id }}" class="btn-action btn-action-edit">
+    {{ editIcon(18) }}
+    Edit
+  </a>
+  <a href="/files/download/{{ file.id }}" class="btn-action btn-action-download">
+    {{ downloadIcon(18) }}
+    Download
+  </a>
+  <form action="/files/delete/{{ file.id }}" method="POST" class="delete-form" onsubmit="return confirm('Delete this file?')">
+    <button type="submit" class="btn-action btn-action-delete">
+      {{ trashIcon(18) }}
+      Delete
+    </button>
+  </form>
+</div>
+{% endmacro %}

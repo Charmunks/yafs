@@ -1,0 +1,23 @@
+{% extends "base.njk" %}
+{% from "partials/back-link.njk" import backLink %}
+{% from "partials/file-card.njk" import fileCard %}
+{% from "partials/empty-state.njk" import emptyState %}
+
+{% block content %}
+<div class="files-container">
+  <div class="folder-header">
+    {{ backLink("/", 20) }}
+    <h1>{{ folderName }}</h1>
+  </div>
+
+  {% if files.length > 0 %}
+    <div class="files-grid">
+      {% for file in files %}
+        {{ fileCard(file) }}
+      {% endfor %}
+    </div>
+  {% else %}
+    {{ emptyState("This folder is empty") }}
+  {% endif %}
+</div>
+{% endblock %}

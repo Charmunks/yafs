@@ -1,0 +1,20 @@
+{% extends "base.njk" %}
+{% from "partials/file-card.njk" import fileCard, folderCard %}
+{% from "partials/empty-state.njk" import emptyState %}
+
+{% block content %}
+<div class="files-container">
+  {% if folders.length > 0 or files.length > 0 %}
+    <div class="files-grid">
+      {% for folder in folders %}
+        {{ folderCard(folder) }}
+      {% endfor %}
+      {% for file in files %}
+        {{ fileCard(file) }}
+      {% endfor %}
+    </div>
+  {% else %}
+    {{ emptyState("No files yet", true) }}
+  {% endif %}
+</div>
+{% endblock %}

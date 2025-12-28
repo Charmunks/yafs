@@ -1,0 +1,54 @@
+{% extends "base.njk" %}
+
+{% block content %}
+<div class="upload-container">
+  <div class="upload-card">
+    <div class="upload-header">
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      </svg>
+      <h1>Edit File</h1>
+    </div>
+
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/files/edit/{{ file.id }}" class="upload-form">
+      <div class="form-group">
+        <label for="filename">Filename</label>
+        <input type="text" id="filename" name="filename" value="{{ file.filename }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description (optional)</label>
+        <textarea id="description" name="description" rows="3" placeholder="Add a description for this file">{{ file.description or '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="folder">Folder (optional)</label>
+        <input type="text" id="folder" name="folder" value="{{ file.folder or '' }}" placeholder="e.g., documents/photos">
+      </div>
+
+      <div class="form-group">
+        <label class="toggle-label">
+          <input type="checkbox" name="isPublic" value="true" {% if file.isPublic %}checked{% endif %}>
+          <span class="toggle-text">Make file public</span>
+        </label>
+        <span class="form-hint">Public files can be viewed by anyone, even without signing in.</span>
+      </div>
+
+      <div class="upload-actions">
+        <a href="/files/{{ file.id }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

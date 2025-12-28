@@ -1,0 +1,8 @@
+{% from "partials/icons.njk" import backArrow %}
+
+{% macro backLink(href="/", size=16) %}
+<a href="{{ href }}" class="back-link">
+  {{ backArrow(size) }}
+  Back
+</a>
+{% endmacro %}

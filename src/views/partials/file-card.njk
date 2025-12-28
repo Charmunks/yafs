@@ -1,0 +1,42 @@
+{% from "partials/icons.njk" import file as fileIcon, edit as editIcon, trash as trashIcon %}
+
+{% macro fileCard(file) %}
+  {% set ext = file.filename.split('.').pop().toLowerCase() %}
+  {% set isImage = ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'] %}
+  {% set isVideo = ext in ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'] %}
+  {% set hasViewPage = isImage or isVideo %}
+  <div class="file-card-wrapper">
+    <a href="/files/{{ file.id }}" class="file-card file-card-link">
+      {% if isImage %}
+        <div class="file-thumbnail">
+          <img src="/files/view/{{ file.id }}" alt="{{ file.filename }}">
+        </div>
+      {% else %}
+        <div class="file-icon">
+          {{ fileIcon(32) }}
+        </div>
+      {% endif %}
+      <div class="file-name" title="{{ file.filename }}">{{ file.filename }}</div>
+    </a>
+      <div class="file-card-actions">
+        <a href="/files/edit/{{ file.id }}" class="file-action-btn edit-btn" title="Edit">
+          {{ editIcon(16) }}
+        </a>
+        <form action="/files/delete/{{ file.id }}" method="POST" class="delete-form" onsubmit="return confirm('Delete this file?')">
+          <button type="submit" class="file-action-btn delete-btn" title="Delete">
+            {{ trashIcon(16) }}
+          </button>
+        </form>
+      </div>
+  </div>
+{% endmacro %}
+
+{% macro folderCard(folderName) %}
+  {% from "partials/icons.njk" import folder as folderIcon %}
+  <a href="/folder/{{ folderName | urlencode }}" class="file-card folder-card">
+    <div class="file-icon">
+      {{ folderIcon(32) }}
+    </div>
+    <div class="file-name" title="{{ folderName }}">{{ folderName }}</div>
+  </a>
+{% endmacro %}
