@@ -889,3 +889,78 @@ h2 {
   height: 20px;
 }
 
+.folder-picker {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.folder-select {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--surface0);
+  border-radius: 6px;
+  background-color: var(--mantle);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.folder-select:focus {
+  outline: none;
+  border-color: var(--rosewater);
+}
+
+.btn-small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.new-folder-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.new-folder-input input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--surface0);
+  border-radius: 6px;
+  background-color: var(--mantle);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.new-folder-input input:focus {
+  outline: none;
+  border-color: var(--rosewater);
+}
+
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.breadcrumb-item {
+  color: var(--subtext0);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.breadcrumb-item:hover:not(.current) {
+  color: var(--rosewater);
+}
+
+.breadcrumb-item.current {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.breadcrumb-separator {
+  color: var(--surface1);
+  font-size: 0.9rem;
+}
+

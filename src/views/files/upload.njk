@@ -42,7 +42,18 @@
 
       <div class="form-group">
         <label for="folder">Folder (optional)</label>
-        <input type="text" id="folder" name="folder" placeholder="e.g., documents/photos">
+        <div class="folder-picker">
+          <select id="folderSelect" class="folder-select">
+            <option value="">Root (no folder)</option>
+          </select>
+          <button type="button" id="newFolderBtn" class="btn btn-secondary btn-small">New Folder</button>
+        </div>
+        <input type="hidden" id="folder" name="folder" value="">
+        <div id="newFolderInput" class="new-folder-input" style="display: none;">
+          <input type="text" id="newFolderName" placeholder="Enter folder path (e.g., photos/vacation)">
+          <button type="button" id="confirmNewFolder" class="btn btn-primary btn-small">Add</button>
+          <button type="button" id="cancelNewFolder" class="btn btn-secondary btn-small">Cancel</button>
+        </div>
       </div>
 
       <div class="form-group">
@@ -92,6 +103,73 @@
   const progressBar = document.getElementById('progressBar');
   const progressCurrent = document.getElementById('progressCurrent');
   const submitBtn = document.getElementById('submitBtn');
+
+  const folderSelect = document.getElementById('folderSelect');
+  const folderInput = document.getElementById('folder');
+  const newFolderBtn = document.getElementById('newFolderBtn');
+  const newFolderInput = document.getElementById('newFolderInput');
+  const newFolderName = document.getElementById('newFolderName');
+  const confirmNewFolder = document.getElementById('confirmNewFolder');
+  const cancelNewFolder = document.getElementById('cancelNewFolder');
+
+  async function loadFolders() {
+    try {
+      const response = await fetch('/api/folders');
+      const data = await response.json();
+      
+      folderSelect.innerHTML = '<option value="">Root (no folder)</option>';
+      for (const folder of data.folders) {
+        const option = document.createElement('option');
+        option.value = folder;
+        option.textContent = folder;
+        folderSelect.appendChild(option);
+      }
+    } catch (err) {
+      console.error('Failed to load folders:', err);
+    }
+  }
+
+  loadFolders();
+
+  folderSelect.addEventListener('change', () => {
+    folderInput.value = folderSelect.value;
+  });
+
+  newFolderBtn.addEventListener('click', () => {
+    newFolderInput.style.display = 'flex';
+    newFolderName.focus();
+  });
+
+  cancelNewFolder.addEventListener('click', () => {
+    newFolderInput.style.display = 'none';
+    newFolderName.value = '';
+  });
+
+  confirmNewFolder.addEventListener('click', () => {
+    const folderPath = newFolderName.value.trim().replace(/^\/+|\/+$/g, '');
+    if (folderPath) {
+      const exists = Array.from(folderSelect.options).some(opt => opt.value === folderPath);
+      if (!exists) {
+        const option = document.createElement('option');
+        option.value = folderPath;
+        option.textContent = folderPath;
+        folderSelect.appendChild(option);
+      }
+      folderSelect.value = folderPath;
+      folderInput.value = folderPath;
+    }
+    newFolderInput.style.display = 'none';
+    newFolderName.value = '';
+  });
+
+  newFolderName.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      confirmNewFolder.click();
+    } else if (e.key === 'Escape') {
+      cancelNewFolder.click();
+    }
+  });
 
   function updateFileDisplay() {
     const count = fileInput.files.length;

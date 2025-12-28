@@ -31,9 +31,14 @@
   </div>
 {% endmacro %}
 
-{% macro folderCard(folderName) %}
+{% macro folderCard(folderName, parentPath) %}
   {% from "partials/icons.njk" import folder as folderIcon %}
-  <a href="/folder/{{ folderName | urlencode }}" class="file-card folder-card">
+  {% if parentPath %}
+    {% set fullPath = parentPath + "/" + folderName %}
+  {% else %}
+    {% set fullPath = folderName %}
+  {% endif %}
+  <a href="/folder/{{ fullPath | urlencode }}" class="file-card folder-card">
     <div class="file-icon">
       {{ folderIcon(32) }}
     </div>

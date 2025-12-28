@@ -1,17 +1,34 @@
 {% extends "base.njk" %}
 {% from "partials/back-link.njk" import backLink %}
-{% from "partials/file-card.njk" import fileCard %}
+{% from "partials/file-card.njk" import fileCard, folderCard %}
 {% from "partials/empty-state.njk" import emptyState %}
 
 {% block content %}
 <div class="files-container">
   <div class="folder-header">
-    {{ backLink("/", 20) }}
-    <h1>{{ folderName }}</h1>
+    {% if breadcrumbs.length > 1 %}
+      {{ backLink("/folder/" + breadcrumbs[breadcrumbs.length - 2].path, 20) }}
+    {% else %}
+      {{ backLink("/", 20) }}
+    {% endif %}
+    <div class="breadcrumb-nav">
+      <a href="/" class="breadcrumb-item">Home</a>
+      {% for crumb in breadcrumbs %}
+        <span class="breadcrumb-separator">/</span>
+        {% if loop.last %}
+          <span class="breadcrumb-item current">{{ crumb.name }}</span>
+        {% else %}
+          <a href="/folder/{{ crumb.path }}" class="breadcrumb-item">{{ crumb.name }}</a>
+        {% endif %}
+      {% endfor %}
+    </div>
   </div>
 
-  {% if files.length > 0 %}
+  {% if subfolders.length > 0 or files.length > 0 %}
     <div class="files-grid">
+      {% for subfolder in subfolders %}
+        {{ folderCard(subfolder, folderPath) }}
+      {% endfor %}
       {% for file in files %}
         {{ fileCard(file) }}
       {% endfor %}

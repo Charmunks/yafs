@@ -7,6 +7,22 @@ router.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+router.get("/folders", async (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.json({ folders: [] });
+  }
+
+  const folders = await db("files")
+    .where({ ownerId: userId })
+    .whereNotNull("folder")
+    .distinct("folder")
+    .pluck("folder");
+
+  res.json({ folders: folders.sort() });
+});
+
 router.get("/search", async (req, res) => {
   const userId = req.session.userId;
   const query = req.query.q || "";
