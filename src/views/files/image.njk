@@ -2,6 +2,19 @@
 {% from "partials/back-link.njk" import backLink %}
 {% from "partials/file-detail-actions.njk" import fileDetailActions %}
 
+{% block meta %}
+<meta property="og:title" content="{{ file.filename }}">
+<meta property="og:type" content="website">
+<meta property="og:image" content="{{ baseUrl }}/files/view/{{ file.id }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ file.filename }}">
+<meta name="twitter:image" content="{{ baseUrl }}/files/view/{{ file.id }}">
+{% if file.description %}
+<meta property="og:description" content="{{ file.description }}">
+<meta name="twitter:description" content="{{ file.description }}">
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="file-detail-container">
   {{ backLink() }}

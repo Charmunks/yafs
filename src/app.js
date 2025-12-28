@@ -55,6 +55,8 @@ app.use(async (req, res, next) => {
     ? { id: req.session.userId, username: req.session.username }
     : null;
 
+  res.locals.baseUrl = `${req.protocol}://${req.get("host")}`;
+
   try {
     const siteTitleSetting = await db("settings").where({ key: "site_title" }).first();
     res.locals.siteTitle = siteTitleSetting?.value || "YAFS";

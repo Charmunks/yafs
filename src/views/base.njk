@@ -5,6 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% if title %}{{ title }} | {{ siteTitle }}{% else %}{{ siteTitle }}{% endif %}</title>
+  
+  {% block meta %}
+  <meta property="og:title" content="{{ siteTitle }}">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{ siteTitle }}">
+  {% endblock %}
+  
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238839ef' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z'></path></svg>">
   <link rel="stylesheet" href="/css/style.css">
   {% block head %}{% endblock %}

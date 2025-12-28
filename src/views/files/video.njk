@@ -2,6 +2,22 @@
 {% from "partials/back-link.njk" import backLink %}
 {% from "partials/file-detail-actions.njk" import fileDetailActions %}
 
+{% block meta %}
+<meta property="og:title" content="{{ file.filename }}">
+<meta property="og:type" content="video.other">
+<meta property="og:video" content="{{ baseUrl }}/files/view/{{ file.id }}">
+<meta property="og:video:type" content="video/{{ ext }}">
+<meta name="twitter:card" content="player">
+<meta name="twitter:title" content="{{ file.filename }}">
+<meta name="twitter:player" content="{{ baseUrl }}/files/preview/{{ file.id }}">
+<meta name="twitter:player:stream" content="{{ baseUrl }}/files/view/{{ file.id }}">
+<meta name="twitter:player:stream:content_type" content="video/{{ ext }}">
+{% if file.description %}
+<meta property="og:description" content="{{ file.description }}">
+<meta name="twitter:description" content="{{ file.description }}">
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="file-detail-container">
   {{ backLink() }}
