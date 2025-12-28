@@ -283,7 +283,8 @@ router.get("/:id", async (req, res) => {
     if (imageExtensions.includes(ext)) {
       return res.render("files/image", {
         title: file.filename,
-        file
+        file,
+        isOwner
       });
     }
 
@@ -291,7 +292,8 @@ router.get("/:id", async (req, res) => {
       return res.render("files/video", {
         title: file.filename,
         file,
-        ext: ext === 'mov' ? 'mp4' : ext
+        ext: ext === 'mov' ? 'mp4' : ext,
+        isOwner
       });
     }
 
@@ -301,7 +303,8 @@ router.get("/:id", async (req, res) => {
       return res.render("files/markdown", {
         title: file.filename,
         file,
-        content
+        content,
+        isOwner
       });
     }
 
