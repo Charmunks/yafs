@@ -167,6 +167,7 @@ router.get("/thumb/:id", async (req, res) => {
 
     res.type('webp');
     sharp(file.path)
+      .rotate()
       .resize(width, null, { withoutEnlargement: true })
       .webp({ quality })
       .pipe(res);
