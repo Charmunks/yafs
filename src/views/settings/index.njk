@@ -9,6 +9,18 @@
   {% endif %}
 
   <section class="settings-section">
+    <h2>Site Title</h2>
+    <form method="POST" action="/settings/site-title" class="settings-form">
+      <div class="form-group">
+        <label for="siteTitle">Site Title</label>
+        <input type="text" id="siteTitle" name="siteTitle" value="{{ pageTitleSetting }}" placeholder="YAFS" class="form-control">
+        <small>Displayed in the header and page titles (leave blank for default "YAFS")</small>
+      </div>
+      <button type="submit" class="btn">Save</button>
+    </form>
+  </section>
+
+  <section class="settings-section">
     <h2>Registration</h2>
     <form method="POST" action="/settings/registration" class="settings-form">
       <label class="toggle-label">

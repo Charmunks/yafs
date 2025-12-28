@@ -28,13 +28,18 @@ router.get("/", async (req, res) => {
       .where({ key: "markdown_sanitization_enabled" })
       .first();
 
+    const siteTitleSetting = await db("settings")
+      .where({ key: "site_title" })
+      .first();
+
     const defaultStoragePath = path.join(os.homedir(), "files");
 
     res.render("settings/index", {
       title: "Settings",
       registrationEnabled: registrationSetting?.value === "true",
       storagePath: storagePathSetting?.value || defaultStoragePath,
-      markdownSanitizationEnabled: markdownSanitizationSetting?.value !== "false"
+      markdownSanitizationEnabled: markdownSanitizationSetting?.value !== "false",
+      pageTitleSetting: siteTitleSetting?.value || ""
     });
   } catch (err) {
     console.error("Settings error:", err);
@@ -100,6 +105,27 @@ router.post("/markdown-sanitization", async (req, res) => {
     res.redirect("/settings");
   } catch (err) {
     console.error("Update markdown sanitization setting error:", err);
+    res.redirect("/settings");
+  }
+});
+
+router.post("/site-title", async (req, res) => {
+  const { siteTitle } = req.body;
+
+  try {
+    const existing = await db("settings").where({ key: "site_title" }).first();
+
+    if (existing) {
+      await db("settings")
+        .where({ key: "site_title" })
+        .update({ value: siteTitle, updated_at: db.fn.now() });
+    } else {
+      await db("settings").insert({ key: "site_title", value: siteTitle });
+    }
+
+    res.redirect("/settings");
+  } catch (err) {
+    console.error("Update site title error:", err);
     res.redirect("/settings");
   }
 });

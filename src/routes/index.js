@@ -41,7 +41,6 @@ router.get("/", async (req, res) => {
     .orderBy("created_at", "desc");
 
   res.render("index", {
-    title: "YAFS",
     folders,
     files,
   });

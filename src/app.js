@@ -50,10 +50,18 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   res.locals.user = req.session.userId
     ? { id: req.session.userId, username: req.session.username }
     : null;
+
+  try {
+    const siteTitleSetting = await db("settings").where({ key: "site_title" }).first();
+    res.locals.siteTitle = siteTitleSetting?.value || "YAFS";
+  } catch {
+    res.locals.siteTitle = "YAFS";
+  }
+
   next();
 });
 
