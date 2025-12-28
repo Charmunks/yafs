@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import { marked } from "marked";
+import DOMPurify from "isomorphic-dompurify";
 import sharp from "sharp";
 import db from "../db/index.js";
 
@@ -299,7 +300,17 @@ router.get("/:id", async (req, res) => {
 
     if (ext === 'md') {
       const markdown = fs.readFileSync(file.path, 'utf-8');
-      const content = marked(markdown);
+      let content = marked(markdown);
+      
+      const sanitizationSetting = await db("settings")
+        .where({ key: "markdown_sanitization_enabled" })
+        .first();
+      const shouldSanitize = sanitizationSetting?.value !== "false";
+      
+      if (shouldSanitize) {
+        content = DOMPurify.sanitize(content);
+      }
+      
       return res.render("files/markdown", {
         title: file.filename,
         file,

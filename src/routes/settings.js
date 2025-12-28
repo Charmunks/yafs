@@ -24,12 +24,17 @@ router.get("/", async (req, res) => {
       .where({ key: "storage_path" })
       .first();
 
+    const markdownSanitizationSetting = await db("settings")
+      .where({ key: "markdown_sanitization_enabled" })
+      .first();
+
     const defaultStoragePath = path.join(os.homedir(), "files");
 
     res.render("settings/index", {
       title: "Settings",
       registrationEnabled: registrationSetting?.value === "true",
-      storagePath: storagePathSetting?.value || defaultStoragePath
+      storagePath: storagePathSetting?.value || defaultStoragePath,
+      markdownSanitizationEnabled: markdownSanitizationSetting?.value !== "false"
     });
   } catch (err) {
     console.error("Settings error:", err);
@@ -73,6 +78,28 @@ router.post("/storage", async (req, res) => {
     res.redirect("/settings");
   } catch (err) {
     console.error("Update storage path error:", err);
+    res.redirect("/settings");
+  }
+});
+
+router.post("/markdown-sanitization", async (req, res) => {
+  const { enabled } = req.body;
+  const newValue = enabled === "on" ? "true" : "false";
+
+  try {
+    const existing = await db("settings").where({ key: "markdown_sanitization_enabled" }).first();
+
+    if (existing) {
+      await db("settings")
+        .where({ key: "markdown_sanitization_enabled" })
+        .update({ value: newValue, updated_at: db.fn.now() });
+    } else {
+      await db("settings").insert({ key: "markdown_sanitization_enabled", value: newValue });
+    }
+
+    res.redirect("/settings");
+  } catch (err) {
+    console.error("Update markdown sanitization setting error:", err);
     res.redirect("/settings");
   }
 });
