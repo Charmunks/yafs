@@ -6,6 +6,7 @@ COPY package*.json ./
 
 RUN npm ci --only=production
 
+COPY knexfile.js ./
 COPY src ./src
 
 EXPOSE 3000
