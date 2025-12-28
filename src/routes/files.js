@@ -93,6 +93,34 @@ router.post("/upload", upload.array("files"), async (req, res) => {
   }
 });
 
+router.post("/upload/single", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file provided" });
+    }
+
+    const folder = req.body.folder || null;
+    const isPublic = req.body.isPublic === "true";
+    const displayFilename = req.file.originalname;
+
+    const [inserted] = await db("files").insert({
+      filename: displayFilename,
+      folder,
+      path: req.file.path,
+      ownerId: req.session.userId,
+      isPublic,
+      description: null
+    }).returning("id");
+
+    console.log(`[UPLOAD] User ${req.session.userId} uploaded "${displayFilename}" (${req.file.size} bytes) to ${folder || "root"}`);
+
+    res.json({ success: true, id: inserted.id || inserted, filename: displayFilename });
+  } catch (err) {
+    console.error("Single upload error:", err);
+    res.status(500).json({ error: "Failed to upload file" });
+  }
+});
+
 router.get("/view/:id", async (req, res) => {
   try {
     const file = await db("files").where({ id: req.params.id }).first();

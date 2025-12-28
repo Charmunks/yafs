@@ -362,6 +362,41 @@ h2 {
   margin-top: 0.5rem;
 }
 
+.upload-progress {
+  margin-bottom: 1rem;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.progress-bar-container {
+  height: 8px;
+  background-color: var(--surface0);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--rosewater);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.progress-current {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--subtext0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .btn-secondary {
   background-color: var(--surface0);
   color: var(--text);

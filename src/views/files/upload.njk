@@ -53,9 +53,20 @@
         <span class="form-hint">Public files can be viewed by anyone, even without signing in.</span>
       </div>
 
-      <div class="upload-actions">
+      <div class="upload-progress" id="uploadProgress" style="display: none;">
+        <div class="progress-info">
+          <span id="progressText">Uploading...</span>
+          <span id="progressCount">0 / 0</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-current" id="progressCurrent"></div>
+      </div>
+
+      <div class="upload-actions" id="uploadActions">
         <a href="/" class="btn btn-secondary">Cancel</a>
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="btn btn-primary" id="submitBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="17 8 12 3 7 8"/>
@@ -73,6 +84,14 @@
   const fileInput = document.getElementById('file');
   const fileName = document.getElementById('fileName');
   const singleFileFields = document.querySelectorAll('.single-file-only');
+  const form = document.querySelector('.upload-form');
+  const uploadProgress = document.getElementById('uploadProgress');
+  const uploadActions = document.getElementById('uploadActions');
+  const progressText = document.getElementById('progressText');
+  const progressCount = document.getElementById('progressCount');
+  const progressBar = document.getElementById('progressBar');
+  const progressCurrent = document.getElementById('progressCurrent');
+  const submitBtn = document.getElementById('submitBtn');
 
   function updateFileDisplay() {
     const count = fileInput.files.length;
@@ -127,6 +146,62 @@
         }
       }
     }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    const files = fileInput.files;
+    if (files.length <= 1) return;
+
+    e.preventDefault();
+
+    const folder = document.getElementById('folder').value;
+    const isPublic = document.querySelector('input[name="isPublic"]').checked;
+
+    uploadProgress.style.display = 'block';
+    uploadActions.style.display = 'none';
+    dropzone.style.pointerEvents = 'none';
+    dropzone.style.opacity = '0.6';
+
+    const total = files.length;
+    let uploaded = 0;
+    let failed = 0;
+
+    for (const file of files) {
+      progressCurrent.textContent = `Uploading: ${file.name}`;
+      progressCount.textContent = `${uploaded} / ${total}`;
+      progressBar.style.width = `${(uploaded / total) * 100}%`;
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', folder);
+      formData.append('isPublic', isPublic ? 'true' : 'false');
+
+      try {
+        const response = await fetch('/files/upload/single', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          uploaded++;
+        } else {
+          failed++;
+        }
+      } catch (err) {
+        failed++;
+      }
+
+      progressCount.textContent = `${uploaded} / ${total}`;
+      progressBar.style.width = `${(uploaded / total) * 100}%`;
+    }
+
+    progressText.textContent = 'Complete!';
+    progressCurrent.textContent = failed > 0 ? `${failed} file(s) failed to upload` : 'All files uploaded successfully';
+    progressBar.style.width = '100%';
+
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 1000);
   });
 </script>
 {% endblock %}
