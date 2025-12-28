@@ -9,7 +9,7 @@
     <a href="/files/{{ file.id }}" class="file-card file-card-link">
       {% if isImage %}
         <div class="file-thumbnail">
-          <img src="/files/view/{{ file.id }}" alt="{{ file.filename }}">
+          <img src="/files/thumb/{{ file.id }}" alt="{{ file.filename }}" loading="lazy">
         </div>
       {% else %}
         <div class="file-icon">

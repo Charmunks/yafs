@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import { marked } from "marked";
+import sharp from "sharp";
 import db from "../db/index.js";
 
 const router = express.Router();
@@ -138,6 +139,40 @@ router.get("/view/:id", async (req, res) => {
   } catch (err) {
     console.error("View error:", err);
     res.status(500).send("Failed to view file");
+  }
+});
+
+router.get("/thumb/:id", async (req, res) => {
+  try {
+    const file = await db("files").where({ id: req.params.id }).first();
+
+    if (!file) {
+      return res.status(404).send("File not found");
+    }
+
+    const isOwner = req.session.userId && file.ownerId === req.session.userId;
+    if (!file.isPublic && !isOwner) {
+      return res.status(403).send("Access denied");
+    }
+
+    const ext = path.extname(file.filename).slice(1).toLowerCase();
+    const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+
+    if (!supportedFormats.includes(ext)) {
+      return res.sendFile(file.path);
+    }
+
+    const width = parseInt(req.query.w) || 300;
+    const quality = parseInt(req.query.q) || 70;
+
+    res.type('webp');
+    sharp(file.path)
+      .resize(width, null, { withoutEnlargement: true })
+      .webp({ quality })
+      .pipe(res);
+  } catch (err) {
+    console.error("Thumbnail error:", err);
+    res.status(500).send("Failed to generate thumbnail");
   }
 });
 
