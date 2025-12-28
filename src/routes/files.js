@@ -40,13 +40,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.get("/upload", (req, res) => {
+router.get("/upload", requireAuth, (req, res) => {
   res.render("files/upload", {
     title: "Upload File"
   });
 });
 
-router.post("/upload", upload.array("files"), async (req, res) => {
+router.post("/upload", requireAuth, upload.array("files"), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.render("files/upload", {
@@ -94,7 +94,7 @@ router.post("/upload", upload.array("files"), async (req, res) => {
   }
 });
 
-router.post("/upload/single", upload.single("file"), async (req, res) => {
+router.post("/upload/single", requireAuth, upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file provided" });

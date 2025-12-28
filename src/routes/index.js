@@ -26,13 +26,17 @@ router.get("/", async (req, res) => {
   }
 
   const folders = await db("files")
-    .where({ ownerId: userId })
+    .where(function() {
+      this.where({ ownerId: userId }).orWhere({ isPublic: true });
+    })
     .whereNotNull("folder")
     .distinct("folder")
     .pluck("folder");
 
   const files = await db("files")
-    .where({ ownerId: userId })
+    .where(function() {
+      this.where({ ownerId: userId }).orWhere({ isPublic: true });
+    })
     .whereNull("folder")
     .orderBy("created_at", "desc");
 
@@ -68,7 +72,10 @@ router.get("/folder/:name", async (req, res) => {
   }
 
   const files = await db("files")
-    .where({ ownerId: userId, folder: folderName })
+    .where({ folder: folderName })
+    .where(function() {
+      this.where({ ownerId: userId }).orWhere({ isPublic: true });
+    })
     .orderBy("created_at", "desc");
 
   res.render("folder", {
