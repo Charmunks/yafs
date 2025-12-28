@@ -1,20 +1,96 @@
 {% extends "base.njk" %}
 {% from "partials/file-card.njk" import fileCard, folderCard %}
 {% from "partials/empty-state.njk" import emptyState %}
+{% from "partials/icons.njk" import search as searchIcon, file as fileIcon %}
 
 {% block content %}
 <div class="files-container">
-  {% if folders.length > 0 or files.length > 0 %}
-    <div class="files-grid">
-      {% for folder in folders %}
-        {{ folderCard(folder) }}
-      {% endfor %}
-      {% for file in files %}
-        {{ fileCard(file) }}
-      {% endfor %}
+  <div class="search-bar">
+    <div class="search-input-wrapper">
+      {{ searchIcon(20) }}
+      <input type="text" id="search-input" placeholder="Search files..." autocomplete="off">
     </div>
-  {% else %}
-    {{ emptyState("No files yet", true) }}
-  {% endif %}
+  </div>
+
+  <div id="search-results" class="files-grid" style="display: none;"></div>
+
+  <div id="default-content">
+    {% if folders.length > 0 or files.length > 0 %}
+      <div class="files-grid">
+        {% for folder in folders %}
+          {{ folderCard(folder) }}
+        {% endfor %}
+        {% for file in files %}
+          {{ fileCard(file) }}
+        {% endfor %}
+      </div>
+    {% else %}
+      {{ emptyState("No files yet", true) }}
+    {% endif %}
+  </div>
 </div>
+
+<script>
+(function() {
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  const defaultContent = document.getElementById('default-content');
+  let debounceTimer;
+
+  function renderFileCard(file) {
+    const ext = file.filename.split('.').pop().toLowerCase();
+    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext);
+    
+    let thumbnail = '';
+    if (isImage) {
+      thumbnail = `<div class="file-thumbnail"><img src="/files/view/${file.id}" alt="${file.filename}"></div>`;
+    } else {
+      thumbnail = `<div class="file-icon">{{ fileIcon(32) | replace("\n", "") | replace("\"", "'") | safe }}</div>`;
+    }
+
+    const folderBadge = file.folder ? `<div class="file-folder-badge">${file.folder}</div>` : '';
+
+    return `
+      <div class="file-card-wrapper">
+        <a href="/files/${file.id}" class="file-card file-card-link">
+          ${thumbnail}
+          <div class="file-name" title="${file.filename}">${file.filename}</div>
+          ${folderBadge}
+        </a>
+      </div>
+    `;
+  }
+
+  async function performSearch(query) {
+    if (!query.trim()) {
+      searchResults.style.display = 'none';
+      defaultContent.style.display = 'block';
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+
+      if (data.files.length > 0) {
+        searchResults.innerHTML = data.files.map(renderFileCard).join('');
+        searchResults.style.display = 'grid';
+      } else {
+        searchResults.innerHTML = '<div class="search-no-results">No files found</div>';
+        searchResults.style.display = 'block';
+      }
+      defaultContent.style.display = 'none';
+    } catch (error) {
+      console.error('Search failed:', error);
+    }
+  }
+
+  searchInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      performSearch(this.value);
+    }, 200);
+  });
+})();
+</script>
 {% endblock %}

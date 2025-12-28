@@ -45,9 +45,9 @@ router.get("/upload", (req, res) => {
   });
 });
 
-router.post("/upload", upload.single("file"), async (req, res) => {
+router.post("/upload", upload.array("files"), async (req, res) => {
   try {
-    if (!req.file) {
+    if (!req.files || req.files.length === 0) {
       return res.render("files/upload", {
         title: "Upload File",
         error: "No file selected"
@@ -56,19 +56,30 @@ router.post("/upload", upload.single("file"), async (req, res) => {
 
     const folder = req.body.folder || null;
     const isPublic = req.body.isPublic === "true";
-    const description = req.body.description?.trim() || null;
-    const customFilename = req.body.customFilename?.trim();
-    const ext = path.extname(req.file.originalname);
-    const displayFilename = customFilename ? `${customFilename}${ext}` : req.file.originalname;
+    const isBulk = req.files.length > 1;
 
-    await db("files").insert({
-      filename: displayFilename,
-      folder,
-      path: req.file.path,
-      ownerId: req.session.userId,
-      isPublic,
-      description
-    });
+    for (const file of req.files) {
+      const ext = path.extname(file.originalname);
+      let displayFilename;
+      let description = null;
+
+      if (isBulk) {
+        displayFilename = file.originalname;
+      } else {
+        const customFilename = req.body.customFilename?.trim();
+        displayFilename = customFilename ? `${customFilename}${ext}` : file.originalname;
+        description = req.body.description?.trim() || null;
+      }
+
+      await db("files").insert({
+        filename: displayFilename,
+        folder,
+        path: file.path,
+        ownerId: req.session.userId,
+        isPublic,
+        description
+      });
+    }
 
     res.redirect("/");
   } catch (err) {

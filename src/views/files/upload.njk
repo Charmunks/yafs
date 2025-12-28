@@ -18,24 +18,24 @@
 
     <form method="POST" action="/files/upload" enctype="multipart/form-data" class="upload-form">
       <div class="dropzone" id="dropzone">
-        <input type="file" id="file" name="file" required>
+        <input type="file" id="file" name="files" multiple required>
         <div class="dropzone-content">
           <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M12 16V4m0 0L8 8m4-4l4 4"/>
             <path d="M3 15v4a2 2 0 002 2h14a2 2 0 002-2v-4"/>
           </svg>
-          <span class="dropzone-text">Drag & drop your file here</span>
+          <span class="dropzone-text">Drag & drop your file(s) here</span>
           <span class="dropzone-hint">or click to browse</span>
         </div>
         <span class="file-name" id="fileName"></span>
       </div>
 
-      <div class="form-group">
+      <div class="form-group single-file-only" id="customFilenameGroup">
         <label for="customFilename">Custom filename (optional)</label>
         <input type="text" id="customFilename" name="customFilename" placeholder="Leave blank to use original filename">
       </div>
 
-      <div class="form-group">
+      <div class="form-group single-file-only" id="descriptionGroup">
         <label for="description">Description (optional)</label>
         <textarea id="description" name="description" rows="3" placeholder="Add a description for this file"></textarea>
       </div>
@@ -72,13 +72,26 @@
   const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('file');
   const fileName = document.getElementById('fileName');
+  const singleFileFields = document.querySelectorAll('.single-file-only');
 
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files.length > 0) {
+  function updateFileDisplay() {
+    const count = fileInput.files.length;
+    if (count > 1) {
+      fileName.textContent = `${count} files selected`;
+      dropzone.classList.add('has-file');
+      singleFileFields.forEach(el => el.style.display = 'none');
+    } else if (count === 1) {
       fileName.textContent = fileInput.files[0].name;
       dropzone.classList.add('has-file');
+      singleFileFields.forEach(el => el.style.display = '');
+    } else {
+      fileName.textContent = '';
+      dropzone.classList.remove('has-file');
+      singleFileFields.forEach(el => el.style.display = '');
     }
-  });
+  }
+
+  fileInput.addEventListener('change', updateFileDisplay);
 
   dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -94,8 +107,7 @@
     dropzone.classList.remove('dragover');
     if (e.dataTransfer.files.length > 0) {
       fileInput.files = e.dataTransfer.files;
-      fileName.textContent = e.dataTransfer.files[0].name;
-      dropzone.classList.add('has-file');
+      updateFileDisplay();
     }
   });
 
@@ -110,8 +122,7 @@
           const dataTransfer = new DataTransfer();
           dataTransfer.items.add(file);
           fileInput.files = dataTransfer.files;
-          fileName.textContent = file.name || 'pasted-image.png';
-          dropzone.classList.add('has-file');
+          updateFileDisplay();
           break;
         }
       }

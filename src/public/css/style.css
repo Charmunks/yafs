@@ -1,3 +1,8 @@
+@font-face {
+  font-family: 'CustomFont';
+  src: url('/font.woff') format('woff');
+}
+
 :root {
   --base: #eff1f5;
   --text: #4c4f69;
@@ -34,7 +39,7 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'CustomFont', system-ui, -apple-system, sans-serif;
   background-color: var(--base);
   color: var(--text);
   min-height: 100vh;
@@ -55,6 +60,9 @@ nav {
 }
 
 nav .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.5rem;
   font-weight: bold;
   color: var(--text);
@@ -415,6 +423,11 @@ h2 {
 }
 
 .file-icon {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--rosewater);
   margin-bottom: 0.75rem;
 }
@@ -664,5 +677,64 @@ h2 {
   color: var(--base);
   border: none;
   cursor: pointer;
+}
+
+.search-bar {
+  margin-bottom: 1.5rem;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  max-width: 400px;
+}
+
+.search-input-wrapper svg {
+  color: var(--overlay1);
+  flex-shrink: 0;
+}
+
+.search-input-wrapper input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.search-input-wrapper input::placeholder {
+  color: var(--overlay0);
+}
+
+.search-input-wrapper:focus-within {
+  border-color: var(--rosewater);
+}
+
+.search-input-wrapper:focus-within svg {
+  color: var(--rosewater);
+}
+
+.search-no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--overlay1);
+  font-size: 1rem;
+}
+
+.file-folder-badge {
+  font-size: 0.75rem;
+  color: var(--subtext0);
+  background-color: var(--surface0);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.25rem;
 }
 
