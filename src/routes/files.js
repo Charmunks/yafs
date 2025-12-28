@@ -79,6 +79,8 @@ router.post("/upload", upload.array("files"), async (req, res) => {
         isPublic,
         description
       });
+
+      console.log(`[UPLOAD] User ${req.session.userId} uploaded "${displayFilename}" (${file.size} bytes) to ${folder || "root"}`);
     }
 
     res.redirect("/");
