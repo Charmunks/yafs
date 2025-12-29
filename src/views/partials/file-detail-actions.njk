@@ -1,5 +1,4 @@
 {% from "partials/icons.njk" import edit as editIcon, download as downloadIcon, trash as trashIcon %}
-{% from "partials/forms.njk" import csrfInput %}
 
 {% macro fileDetailActions(file, isOwner) %}
 <div class="file-detail-actions">
@@ -15,7 +14,6 @@
   </a>
   {% if isOwner %}
   <form action="/files/delete/{{ file.id }}" method="POST" class="delete-form" onsubmit="return confirm('Delete this file?')">
-    {{ csrfInput() }}
     <button type="submit" class="btn-action btn-action-delete">
       {{ trashIcon(18) }}
       Delete

@@ -58,6 +58,7 @@ router.post("/login", async (req, res) => {
       }
       req.session.userId = user.id;
       req.session.username = user.username;
+      req.session.isAdmin = user.is_admin;
       res.redirect("/");
     });
   } catch (err) {
@@ -149,15 +150,20 @@ router.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
+    const userCount = await db("users").count("id as count").first();
+    const isFirstUser = parseInt(userCount.count) === 0;
+
     const [user] = await db("users")
       .insert({
         username,
-        password: hashedPassword
+        password: hashedPassword,
+        is_admin: isFirstUser
       })
-      .returning(["id", "username"]);
+      .returning(["id", "username", "is_admin"]);
 
     req.session.userId = user.id;
     req.session.username = user.username;
+    req.session.isAdmin = user.is_admin;
     res.redirect("/");
   } catch (err) {
     console.error("Registration error:", err);

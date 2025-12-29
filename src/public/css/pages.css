@@ -245,3 +245,104 @@
 .markdown-preview th {
   background-color: var(--surface0);
 }
+
+/* Admin Tables */
+.settings-container {
+  max-width: 900px;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.settings-nav-links {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--surface0);
+}
+
+.admin-table th {
+  background-color: var(--surface0);
+  font-weight: 600;
+}
+
+.admin-table tr:hover {
+  background-color: var(--surface0);
+}
+
+.admin-table .actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.inline-form {
+  display: inline;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  background-color: var(--surface1);
+  color: var(--text);
+}
+
+.badge-admin {
+  background-color: var(--rosewater);
+  color: var(--base);
+}
+
+.badge-public {
+  background-color: var(--green);
+  color: var(--base);
+}
+
+.btn-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.btn-danger {
+  background-color: var(--red);
+  color: var(--base);
+}
+
+.btn-danger:hover {
+  background-color: var(--maroon);
+}
+
+.muted {
+  color: var(--subtext0);
+}
+
+.error-container {
+  text-align: center;
+  padding: 3rem;
+}
+
+.error-container h1 {
+  margin-bottom: 1rem;
+}
+
+.error-container p {
+  margin-bottom: 1.5rem;
+  color: var(--subtext0);
+}

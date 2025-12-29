@@ -1,0 +1,60 @@
+{% extends "base.njk" %}
+
+{% block content %}
+<div class="settings-container">
+  <div class="settings-header">
+    <h1>User Management</h1>
+    <a href="/settings" class="btn">Back to Settings</a>
+  </div>
+  
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <section class="settings-section">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.username }}</td>
+          <td>
+            {% if u.is_admin %}
+              <span class="badge badge-admin">Admin</span>
+            {% else %}
+              <span class="badge">User</span>
+            {% endif %}
+          </td>
+          <td>{{ u.created_at | date }}</td>
+          <td class="actions">
+            {% if u.id != user.id %}
+              <form method="POST" action="/settings/users/{{ u.id }}/toggle-admin" class="inline-form">
+                <button type="submit" class="btn btn-small">
+                  {% if u.is_admin %}Revoke Admin{% else %}Make Admin{% endif %}
+                </button>
+              </form>
+              <form method="POST" action="/settings/users/{{ u.id }}/delete" class="inline-form" onsubmit="return confirm('Delete user {{ u.username }}? This will also delete all their files.')">
+                <button type="submit" class="btn btn-small btn-danger">Delete</button>
+              </form>
+            {% else %}
+              <span class="muted">(You)</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4">No users found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

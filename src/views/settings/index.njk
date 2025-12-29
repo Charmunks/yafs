@@ -1,5 +1,4 @@
 {% extends "base.njk" %}
-{% from "partials/forms.njk" import csrfInput %}
 
 {% block content %}
 <div class="settings-container">
@@ -9,10 +8,17 @@
     <div class="error">{{ error }}</div>
   {% endif %}
 
+  <section class="settings-section settings-nav">
+    <h2>Administration</h2>
+    <div class="settings-nav-links">
+      <a href="/settings/users" class="btn">Manage Users</a>
+      <a href="/settings/files" class="btn">Manage Files</a>
+    </div>
+  </section>
+
   <section class="settings-section">
     <h2>Site Title</h2>
     <form method="POST" action="/settings/site-title" class="settings-form">
-      {{ csrfInput() }}
       <div class="form-group">
         <input type="text" id="siteTitle" name="siteTitle" value="{{ pageTitleSetting }}" placeholder="YAFS" class="form-control">
         <small>Displayed in the header and page titles</small>
@@ -24,7 +30,6 @@
   <section class="settings-section">
     <h2>Registration</h2>
     <form method="POST" action="/settings/registration" class="settings-form">
-      {{ csrfInput() }}
       <label class="toggle-label">
         <input type="checkbox" name="enabled" {% if registrationEnabled %}checked{% endif %}>
         <span>Allow new account registration</span>
@@ -36,7 +41,6 @@
   <section class="settings-section">
     <h2>Markdown</h2>
     <form method="POST" action="/settings/markdown-sanitization" class="settings-form">
-      {{ csrfInput() }}
       <label class="toggle-label">
         <input type="checkbox" name="enabled" {% if markdownSanitizationEnabled %}checked{% endif %}>
         <span>Sanitize markdown file previews (you probably want this on)</span>
@@ -48,7 +52,6 @@
   <section class="settings-section">
     <h2>File Storage</h2>
     <form method="POST" action="/settings/storage" class="settings-form">
-      {{ csrfInput() }}
       <div class="form-group">
         <label for="storagePath">Storage Path</label>
         <input type="text" id="storagePath" name="storagePath" value="{{ storagePath }}" class="form-control">

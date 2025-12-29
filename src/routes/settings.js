@@ -1,18 +1,25 @@
 import express from "express";
 import os from "os";
 import path from "path";
+import fs from "fs/promises";
 import db from "../db/index.js";
 
 const router = express.Router();
 
-function requireAuth(req, res, next) {
+function requireAdmin(req, res, next) {
   if (!req.session.userId) {
     return res.redirect("/auth/login");
+  }
+  if (!req.session.isAdmin) {
+    return res.status(403).render("error", {
+      title: "Access Denied",
+      message: "You do not have permission to access this page."
+    });
   }
   next();
 }
 
-router.use(requireAuth);
+router.use(requireAdmin);
 
 router.get("/", async (req, res) => {
   try {
@@ -131,6 +138,127 @@ router.post("/site-title", async (req, res) => {
   } catch (err) {
     console.error("Update site title error:", err);
     res.redirect("/settings");
+  }
+});
+
+router.get("/users", async (req, res) => {
+  try {
+    const users = await db("users")
+      .select("id", "username", "is_admin", "created_at")
+      .orderBy("created_at", "desc");
+
+    res.render("settings/users", {
+      title: "User Management",
+      users
+    });
+  } catch (err) {
+    console.error("User management error:", err);
+    res.render("settings/users", {
+      title: "User Management",
+      error: "Failed to load users",
+      users: []
+    });
+  }
+});
+
+router.post("/users/:id/toggle-admin", async (req, res) => {
+  const userId = parseInt(req.params.id);
+
+  if (userId === req.session.userId) {
+    return res.redirect("/settings/users");
+  }
+
+  try {
+    const user = await db("users").where({ id: userId }).first();
+    if (user) {
+      await db("users")
+        .where({ id: userId })
+        .update({ is_admin: !user.is_admin, updated_at: db.fn.now() });
+    }
+    res.redirect("/settings/users");
+  } catch (err) {
+    console.error("Toggle admin error:", err);
+    res.redirect("/settings/users");
+  }
+});
+
+router.post("/users/:id/delete", async (req, res) => {
+  const userId = parseInt(req.params.id);
+
+  if (userId === req.session.userId) {
+    return res.redirect("/settings/users");
+  }
+
+  try {
+    await db("files").where({ ownerId: userId }).del();
+    await db("users").where({ id: userId }).del();
+    res.redirect("/settings/users");
+  } catch (err) {
+    console.error("Delete user error:", err);
+    res.redirect("/settings/users");
+  }
+});
+
+router.get("/files", async (req, res) => {
+  try {
+    const files = await db("files")
+      .select("files.*", "users.username as ownerUsername")
+      .leftJoin("users", "files.ownerId", "users.id")
+      .orderBy("files.created_at", "desc");
+
+    res.render("settings/files", {
+      title: "File Management",
+      files
+    });
+  } catch (err) {
+    console.error("File management error:", err);
+    res.render("settings/files", {
+      title: "File Management",
+      error: "Failed to load files",
+      files: []
+    });
+  }
+});
+
+router.post("/files/:id/toggle-public", async (req, res) => {
+  const fileId = parseInt(req.params.id);
+
+  try {
+    const file = await db("files").where({ id: fileId }).first();
+    if (file) {
+      await db("files")
+        .where({ id: fileId })
+        .update({ is_public: !file.is_public, updated_at: db.fn.now() });
+    }
+    res.redirect("/settings/files");
+  } catch (err) {
+    console.error("Toggle public error:", err);
+    res.redirect("/settings/files");
+  }
+});
+
+router.post("/files/:id/delete", async (req, res) => {
+  const fileId = parseInt(req.params.id);
+
+  try {
+    const file = await db("files").where({ id: fileId }).first();
+    if (file) {
+      const storagePathSetting = await db("settings").where({ key: "storage_path" }).first();
+      const storagePath = storagePathSetting?.value || path.join(os.homedir(), "files");
+      const filePath = path.join(storagePath, file.path);
+
+      try {
+        await fs.unlink(filePath);
+      } catch (unlinkErr) {
+        console.error("Failed to delete file from disk:", unlinkErr);
+      }
+
+      await db("files").where({ id: fileId }).del();
+    }
+    res.redirect("/settings/files");
+  } catch (err) {
+    console.error("Delete file error:", err);
+    res.redirect("/settings/files");
   }
 });
 

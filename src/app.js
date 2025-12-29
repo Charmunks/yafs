@@ -2,8 +2,6 @@ import "dotenv/config";
 import express from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import cookieParser from "cookie-parser";
-import { doubleCsrf } from "csrf-csrf";
 import helmet from "helmet";
 import nunjucks from "nunjucks";
 import path from "path";
@@ -27,10 +25,20 @@ if (!SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable must be set");
 }
 
-nunjucks.configure(path.join(__dirname, "views"), {
+const nunjucksEnv = nunjucks.configure(path.join(__dirname, "views"), {
   autoescape: true,
   express: app,
   watch: true
+});
+
+nunjucksEnv.addFilter("date", (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  });
 });
 
 app.set("view engine", "njk");
@@ -42,7 +50,6 @@ app.use(helmet({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
@@ -65,28 +72,9 @@ app.use(
   })
 );
 
-const { doubleCsrfProtection, generateToken } = doubleCsrf({
-  getSecret: () => SESSION_SECRET,
-  getSessionIdentifier: (req) => req.session?.id || "",
-  cookieName: "__csrf",
-  cookieOptions: {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production"
-  },
-  getTokenFromRequest: (req) => req.body._csrf || req.headers["x-csrf-token"]
-});
-
-app.use(doubleCsrfProtection);
-
-app.use((req, res, next) => {
-  res.locals.csrfToken = req.csrfToken();
-  next();
-});
-
 app.use(async (req, res, next) => {
   res.locals.user = req.session.userId
-    ? { id: req.session.userId, username: req.session.username }
+    ? { id: req.session.userId, username: req.session.username, isAdmin: req.session.isAdmin }
     : null;
 
   res.locals.baseUrl = `${req.protocol}://${req.get("host")}`;

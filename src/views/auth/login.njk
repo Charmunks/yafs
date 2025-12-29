@@ -1,5 +1,4 @@
 {% extends "base.njk" %}
-{% from "partials/forms.njk" import csrfInput %}
 
 {% block content %}
 <div class="auth-container">
@@ -10,7 +9,6 @@
   {% endif %}
   
   <form method="POST" action="/auth/login" class="auth-form">
-    {{ csrfInput() }}
     <div class="form-group">
       <label for="username">Username</label>
       <input type="text" id="username" name="username" required autocomplete="username">

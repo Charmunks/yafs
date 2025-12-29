@@ -1,6 +1,5 @@
 {% from "partials/icons.njk" import folder %}
 {% from "partials/theme-switcher.njk" import themeSwitcher %}
-{% from "partials/forms.njk" import csrfInput %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,11 +34,12 @@
         {% if user %}
           <span class="nav-user">{{ user.username }}</span>
           <form method="POST" action="/auth/logout" class="logout-form">
-            {{ csrfInput() }}
             <button type="submit" class="btn">Logout</button>
           </form>
           <a href="/files/upload" class="btn">Upload</a>
-          <a href="/settings" class="btn">Settings</a>
+          {% if user.isAdmin %}
+            <a href="/settings" class="btn">Settings</a>
+          {% endif %}
         {% else %}
           <a href="/auth/login" class="btn">Login</a>
           <a href="/auth/register" class="btn">Register</a>
