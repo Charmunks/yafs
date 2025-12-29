@@ -1,0 +1,31 @@
+{% extends "base.njk" %}
+{% from "partials/icons.njk" import edit as editIcon, check %}
+{% from "partials/forms.njk" import errorMessage %}
+
+{% block content %}
+<div class="upload-container">
+  <div class="upload-card">
+    <div class="upload-header">
+      {{ editIcon(48) }}
+      <h1>Rename Folder</h1>
+    </div>
+
+    {{ errorMessage(error) }}
+
+    <form method="POST" action="/folder/edit/{{ folderPath | urlencode }}" class="upload-form">
+      <div class="form-group">
+        <label for="folderName">Folder Name</label>
+        <input type="text" id="folderName" name="folderName" value="{{ folderName }}" required>
+      </div>
+
+      <div class="upload-actions">
+        <a href="/" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          {{ check(18) }}
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

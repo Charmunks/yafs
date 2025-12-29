@@ -31,17 +31,31 @@
   </div>
 {% endmacro %}
 
-{% macro folderCard(folderName, parentPath) %}
-  {% from "partials/icons.njk" import folder as folderIcon %}
+{% macro folderCard(folderName, parentPath, showActions) %}
+  {% from "partials/icons.njk" import folder as folderIcon, edit as editIcon, trash as trashIcon %}
   {% if parentPath %}
     {% set fullPath = parentPath + "/" + folderName %}
   {% else %}
     {% set fullPath = folderName %}
   {% endif %}
-  <a href="/folder/{{ fullPath | urlencode }}" class="file-card folder-card">
-    <div class="file-icon">
-      {{ folderIcon(32) }}
-    </div>
-    <div class="file-name" title="{{ folderName }}">{{ folderName }}</div>
-  </a>
+  <div class="file-card-wrapper">
+    <a href="/folder/{{ fullPath | urlencode }}" class="file-card folder-card">
+      <div class="file-icon">
+        {{ folderIcon(32) }}
+      </div>
+      <div class="file-name" title="{{ folderName }}">{{ folderName }}</div>
+    </a>
+    {% if showActions %}
+      <div class="file-card-actions">
+        <a href="/folder/edit/{{ fullPath | urlencode }}" class="file-action-btn edit-btn" title="Rename">
+          {{ editIcon(16) }}
+        </a>
+        <form action="/folder/delete/{{ fullPath | urlencode }}" method="POST" class="delete-form" onsubmit="return confirm('Delete this folder and all its files?')">
+          <button type="submit" class="file-action-btn delete-btn" title="Delete">
+            {{ trashIcon(16) }}
+          </button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
 {% endmacro %}

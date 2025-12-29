@@ -1,7 +1,15 @@
 import express from "express";
+import fs from "fs";
 import db from "../db/index.js";
 
 const router = express.Router();
+
+function requireAuth(req, res, next) {
+  if (!req.session.userId) {
+    return res.redirect("/auth/login");
+  }
+  next();
+}
 
 function getTopLevelFolders(folderPaths) {
   const topLevel = new Set();
@@ -72,6 +80,119 @@ router.get("/", async (req, res) => {
     folders: topLevelFolders,
     files,
   });
+});
+
+router.get("/folder/edit/*", requireAuth, async (req, res) => {
+  const folderPath = req.params[0];
+  
+  if (!folderPath) {
+    return res.redirect("/");
+  }
+
+  const filesInFolder = await db("files")
+    .where({ ownerId: req.session.userId })
+    .where(function() {
+      this.where({ folder: folderPath })
+        .orWhere("folder", "like", `${folderPath}/%`);
+    })
+    .first();
+
+  if (!filesInFolder) {
+    return res.redirect("/");
+  }
+
+  const pathParts = folderPath.split("/");
+  const folderName = pathParts[pathParts.length - 1];
+
+  res.render("folder/edit", {
+    title: "Rename Folder",
+    folderPath,
+    folderName
+  });
+});
+
+router.post("/folder/edit/*", requireAuth, async (req, res) => {
+  const folderPath = req.params[0];
+  
+  if (!folderPath) {
+    return res.redirect("/");
+  }
+
+  const newName = req.body.folderName?.trim();
+  if (!newName) {
+    const pathParts = folderPath.split("/");
+    return res.render("folder/edit", {
+      title: "Rename Folder",
+      folderPath,
+      folderName: pathParts[pathParts.length - 1],
+      error: "Folder name is required"
+    });
+  }
+
+  if (newName.includes("/")) {
+    const pathParts = folderPath.split("/");
+    return res.render("folder/edit", {
+      title: "Rename Folder",
+      folderPath,
+      folderName: pathParts[pathParts.length - 1],
+      error: "Folder name cannot contain /"
+    });
+  }
+
+  const pathParts = folderPath.split("/");
+  pathParts[pathParts.length - 1] = newName;
+  const newFolderPath = pathParts.join("/");
+
+  const filesInFolder = await db("files")
+    .where({ ownerId: req.session.userId })
+    .where({ folder: folderPath });
+
+  for (const file of filesInFolder) {
+    await db("files")
+      .where({ id: file.id })
+      .update({ folder: newFolderPath, updated_at: db.fn.now() });
+  }
+
+  const filesInSubfolders = await db("files")
+    .where({ ownerId: req.session.userId })
+    .where("folder", "like", `${folderPath}/%`);
+
+  for (const file of filesInSubfolders) {
+    const newSubfolderPath = file.folder.replace(folderPath, newFolderPath);
+    await db("files")
+      .where({ id: file.id })
+      .update({ folder: newSubfolderPath, updated_at: db.fn.now() });
+  }
+
+  res.redirect("/");
+});
+
+router.post("/folder/delete/*", requireAuth, async (req, res) => {
+  const folderPath = req.params[0];
+  
+  if (!folderPath) {
+    return res.redirect("/");
+  }
+
+  const filesToDelete = await db("files")
+    .where({ ownerId: req.session.userId })
+    .where(function() {
+      this.where({ folder: folderPath })
+        .orWhere("folder", "like", `${folderPath}/%`);
+    });
+
+  for (const file of filesToDelete) {
+    try {
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+    } catch (err) {
+      console.error(`Failed to delete file ${file.path}:`, err.message);
+    }
+    await db("files").where({ id: file.id }).del();
+  }
+
+  res.redirect("/");
 });
 
 router.get("/folder/*", async (req, res) => {

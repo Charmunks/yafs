@@ -27,7 +27,7 @@
   {% if subfolders.length > 0 or files.length > 0 %}
     <div class="files-grid">
       {% for subfolder in subfolders %}
-        {{ folderCard(subfolder, folderPath) }}
+        {{ folderCard(subfolder, folderPath, user) }}
       {% endfor %}
       {% for file in files %}
         {{ fileCard(file) }}
