@@ -82,8 +82,12 @@ app.use(async (req, res, next) => {
   try {
     const siteTitleSetting = await db("settings").where({ key: "site_title" }).first();
     res.locals.siteTitle = siteTitleSetting?.value || "YAFS";
+
+    const footerSetting = await db("settings").where({ key: "footer_enabled" }).first();
+    res.locals.footerEnabled = footerSetting?.value !== "false";
   } catch {
     res.locals.siteTitle = "YAFS";
+    res.locals.footerEnabled = true;
   }
 
   next();

@@ -53,5 +53,11 @@
   </main>
 
   {{ themeSwitcher() }}
+
+  {% if footerEnabled %}
+  <footer>
+    <p>Powered by <a href="https://github.com/Charmunks/yafs" target="_blank">YAFS</a></p>
+  </footer>
+  {% endif %}
 </body>
 </html>

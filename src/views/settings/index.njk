@@ -60,5 +60,16 @@
       <button type="submit" class="btn">Save</button>
     </form>
   </section>
+
+  <section class="settings-section">
+    <h2>Footer</h2>
+    <form method="POST" action="/settings/footer" class="settings-form">
+      <label class="toggle-label">
+        <input type="checkbox" name="enabled" {% if footerEnabled %}checked{% endif %}>
+        <span>Show "Powered by YAFS" footer</span>
+      </label>
+      <button type="submit" class="btn">Save</button>
+    </form>
+  </section>
 </div>
 {% endblock %}

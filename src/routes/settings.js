@@ -39,6 +39,10 @@ router.get("/", async (req, res) => {
       .where({ key: "site_title" })
       .first();
 
+    const footerSetting = await db("settings")
+      .where({ key: "footer_enabled" })
+      .first();
+
     const defaultStoragePath = path.join(os.homedir(), "files");
 
     res.render("settings/index", {
@@ -46,7 +50,8 @@ router.get("/", async (req, res) => {
       registrationEnabled: registrationSetting?.value === "true",
       storagePath: storagePathSetting?.value || defaultStoragePath,
       markdownSanitizationEnabled: markdownSanitizationSetting?.value !== "false",
-      pageTitleSetting: siteTitleSetting?.value || ""
+      pageTitleSetting: siteTitleSetting?.value || "",
+      footerEnabled: footerSetting?.value !== "false"
     });
   } catch (err) {
     console.error("Settings error:", err);
@@ -137,6 +142,28 @@ router.post("/site-title", async (req, res) => {
     res.redirect("/settings");
   } catch (err) {
     console.error("Update site title error:", err);
+    res.redirect("/settings");
+  }
+});
+
+router.post("/footer", async (req, res) => {
+  const { enabled } = req.body;
+  const newValue = enabled === "on" ? "true" : "false";
+
+  try {
+    const existing = await db("settings").where({ key: "footer_enabled" }).first();
+
+    if (existing) {
+      await db("settings")
+        .where({ key: "footer_enabled" })
+        .update({ value: newValue, updated_at: db.fn.now() });
+    } else {
+      await db("settings").insert({ key: "footer_enabled", value: newValue });
+    }
+
+    res.redirect("/settings");
+  } catch (err) {
+    console.error("Update footer setting error:", err);
     res.redirect("/settings");
   }
 });

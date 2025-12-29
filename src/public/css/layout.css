@@ -112,3 +112,19 @@ nav .logo {
 .file-detail-container .back-link {
   margin-bottom: 1.5rem;
 }
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--subtext0);
+  font-size: 0.875rem;
+}
+
+footer a {
+  color: var(--subtext0);
+}
+
+footer a:hover {
+  color: var(--rosewater);
+}
