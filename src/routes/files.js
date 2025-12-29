@@ -22,6 +22,10 @@ async function getStoragePath() {
   return setting?.value || path.join(os.homedir(), "files");
 }
 
+function isValidId(id) {
+  return /^\d+$/.test(id);
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     getStoragePath()
@@ -127,15 +131,19 @@ router.post("/upload/single", requireAuth, upload.single("file"), async (req, re
 
 router.get("/view/:id", async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(404).render("errors/404");
+    }
+
     const file = await db("files").where({ id: req.params.id }).first();
 
     if (!file) {
-      return res.status(404).send("File not found");
+      return res.status(404).render("errors/404");
     }
 
     const isOwner = req.session.userId && file.ownerId === req.session.userId;
     if (!file.isPublic && !isOwner) {
-      return res.status(403).send("Access denied");
+      return res.status(403).render("errors/403");
     }
 
     res.sendFile(file.path);
@@ -147,15 +155,19 @@ router.get("/view/:id", async (req, res) => {
 
 router.get("/thumb/:id", async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(404).render("errors/404");
+    }
+
     const file = await db("files").where({ id: req.params.id }).first();
 
     if (!file) {
-      return res.status(404).send("File not found");
+      return res.status(404).render("errors/404");
     }
 
     const isOwner = req.session.userId && file.ownerId === req.session.userId;
     if (!file.isPublic && !isOwner) {
-      return res.status(403).send("Access denied");
+      return res.status(403).render("errors/403");
     }
 
     const ext = path.extname(file.filename).slice(1).toLowerCase();
@@ -184,15 +196,19 @@ router.get("/thumb/:id", async (req, res) => {
 
 router.get("/download/:id", async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(404).render("errors/404");
+    }
+
     const file = await db("files").where({ id: req.params.id }).first();
 
     if (!file) {
-      return res.status(404).send("File not found");
+      return res.status(404).render("errors/404");
     }
 
     const isOwner = req.session.userId && file.ownerId === req.session.userId;
     if (!file.isPublic && !isOwner) {
-      return res.status(403).send("Access denied");
+      return res.status(403).render("errors/403");
     }
 
     res.download(file.path, file.filename);
@@ -204,12 +220,16 @@ router.get("/download/:id", async (req, res) => {
 
 router.get("/edit/:id", requireAuth, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(404).render("errors/404");
+    }
+
     const file = await db("files")
       .where({ id: req.params.id, ownerId: req.session.userId })
       .first();
 
     if (!file) {
-      return res.status(404).send("File not found");
+      return res.status(404).render("errors/404");
     }
 
     res.render("files/edit", {
@@ -224,12 +244,16 @@ router.get("/edit/:id", requireAuth, async (req, res) => {
 
 router.post("/edit/:id", requireAuth, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(404).render("errors/404");
+    }
+
     const file = await db("files")
       .where({ id: req.params.id, ownerId: req.session.userId })
       .first();
 
     if (!file) {
-      return res.status(404).send("File not found");
+      return res.status(404).render("errors/404");
     }
 
     const filename = req.body.filename?.trim();
@@ -296,15 +320,19 @@ router.post("/edit/:id", requireAuth, async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(404).render("errors/404");
+    }
+
     const file = await db("files").where({ id: req.params.id }).first();
 
     if (!file) {
-      return res.status(404).send("File not found");
+      return res.status(404).render("errors/404");
     }
 
     const isOwner = req.session.userId && file.ownerId === req.session.userId;
     if (!file.isPublic && !isOwner) {
-      return res.status(403).send("Access denied");
+      return res.status(403).render("errors/403");
     }
 
     const ext = path.extname(file.filename).slice(1).toLowerCase();
@@ -360,12 +388,16 @@ router.use(requireAuth);
 
 router.post("/delete/:id", async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) {
+      return res.status(404).render("errors/404");
+    }
+
     const file = await db("files")
       .where({ id: req.params.id, ownerId: req.session.userId })
       .first();
 
     if (!file) {
-      return res.status(404).send("File not found");
+      return res.status(404).render("errors/404");
     }
 
     if (fs.existsSync(file.path)) {

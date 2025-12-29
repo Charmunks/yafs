@@ -99,6 +99,10 @@ app.use("/api", apiRoutes);
 app.use("/settings", settingsRoutes);
 app.use("/files", filesRoutes);
 
+app.use((req, res) => {
+  res.status(404).render("errors/404");
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

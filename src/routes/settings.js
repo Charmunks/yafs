@@ -11,10 +11,7 @@ function requireAdmin(req, res, next) {
     return res.redirect("/auth/login");
   }
   if (!req.session.isAdmin) {
-    return res.status(403).render("error", {
-      title: "Access Denied",
-      message: "You do not have permission to access this page."
-    });
+    return res.status(403).render("errors/403");
   }
   next();
 }
