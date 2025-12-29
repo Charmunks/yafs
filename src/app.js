@@ -67,6 +67,7 @@ app.use(
 
 const { doubleCsrfProtection, generateToken } = doubleCsrf({
   getSecret: () => SESSION_SECRET,
+  getSessionIdentifier: (req) => req.session?.id || "",
   cookieName: "__csrf",
   cookieOptions: {
     httpOnly: true,
@@ -79,7 +80,7 @@ const { doubleCsrfProtection, generateToken } = doubleCsrf({
 app.use(doubleCsrfProtection);
 
 app.use((req, res, next) => {
-  res.locals.csrfToken = generateToken(req, res);
+  res.locals.csrfToken = req.csrfToken();
   next();
 });
 
