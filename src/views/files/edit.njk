@@ -1,19 +1,16 @@
 {% extends "base.njk" %}
+{% from "partials/icons.njk" import edit as editIcon, check %}
+{% from "partials/forms.njk" import folderPicker, folderPickerScript, publicToggle, errorMessage %}
 
 {% block content %}
 <div class="upload-container">
   <div class="upload-card">
     <div class="upload-header">
-      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-      </svg>
+      {{ editIcon(48) }}
       <h1>Edit File</h1>
     </div>
 
-    {% if error %}
-      <div class="error">{{ error }}</div>
-    {% endif %}
+    {{ errorMessage(error) }}
 
     <form method="POST" action="/files/edit/{{ file.id }}" class="upload-form">
       <div class="form-group">
@@ -26,36 +23,13 @@
         <textarea id="description" name="description" rows="3" placeholder="Add a description for this file">{{ file.description or '' }}</textarea>
       </div>
 
-      <div class="form-group">
-        <label for="folder">Folder (optional)</label>
-        <div class="folder-picker">
-          <select id="folderSelect" class="folder-select">
-            <option value="">Root (no folder)</option>
-          </select>
-          <button type="button" id="newFolderBtn" class="btn btn-secondary btn-small">New Folder</button>
-        </div>
-        <input type="hidden" id="folder" name="folder" value="{{ file.folder or '' }}">
-        <div id="newFolderInput" class="new-folder-input" style="display: none;">
-          <input type="text" id="newFolderName" placeholder="Enter folder path (e.g., photos/vacation)">
-          <button type="button" id="confirmNewFolder" class="btn btn-primary btn-small">Add</button>
-          <button type="button" id="cancelNewFolder" class="btn btn-secondary btn-small">Cancel</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="toggle-label">
-          <input type="checkbox" name="isPublic" value="true" {% if file.isPublic %}checked{% endif %}>
-          <span class="toggle-text">Make file public</span>
-        </label>
-        <span class="form-hint">Public files can be viewed by anyone, even without signing in.</span>
-      </div>
+      {{ folderPicker(file.folder or '') }}
+      {{ publicToggle(file.isPublic) }}
 
       <div class="upload-actions">
         <a href="/files/{{ file.id }}" class="btn btn-secondary">Cancel</a>
         <button type="submit" class="btn btn-primary">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
+          {{ check(18) }}
           Save Changes
         </button>
       </div>
@@ -63,84 +37,5 @@
   </div>
 </div>
 
-<script>
-  const folderSelect = document.getElementById('folderSelect');
-  const folderInput = document.getElementById('folder');
-  const newFolderBtn = document.getElementById('newFolderBtn');
-  const newFolderInput = document.getElementById('newFolderInput');
-  const newFolderName = document.getElementById('newFolderName');
-  const confirmNewFolder = document.getElementById('confirmNewFolder');
-  const cancelNewFolder = document.getElementById('cancelNewFolder');
-  const currentFolder = '{{ file.folder or "" }}';
-
-  async function loadFolders() {
-    try {
-      const response = await fetch('/api/folders');
-      const data = await response.json();
-      
-      folderSelect.innerHTML = '<option value="">Root (no folder)</option>';
-      for (const folder of data.folders) {
-        const option = document.createElement('option');
-        option.value = folder;
-        option.textContent = folder;
-        if (folder === currentFolder) {
-          option.selected = true;
-        }
-        folderSelect.appendChild(option);
-      }
-      
-      if (currentFolder && !data.folders.includes(currentFolder)) {
-        const option = document.createElement('option');
-        option.value = currentFolder;
-        option.textContent = currentFolder;
-        option.selected = true;
-        folderSelect.appendChild(option);
-      }
-    } catch (err) {
-      console.error('Failed to load folders:', err);
-    }
-  }
-
-  loadFolders();
-
-  folderSelect.addEventListener('change', () => {
-    folderInput.value = folderSelect.value;
-  });
-
-  newFolderBtn.addEventListener('click', () => {
-    newFolderInput.style.display = 'flex';
-    newFolderName.focus();
-  });
-
-  cancelNewFolder.addEventListener('click', () => {
-    newFolderInput.style.display = 'none';
-    newFolderName.value = '';
-  });
-
-  confirmNewFolder.addEventListener('click', () => {
-    const folderPath = newFolderName.value.trim().replace(/^\/+|\/+$/g, '');
-    if (folderPath) {
-      const exists = Array.from(folderSelect.options).some(opt => opt.value === folderPath);
-      if (!exists) {
-        const option = document.createElement('option');
-        option.value = folderPath;
-        option.textContent = folderPath;
-        folderSelect.appendChild(option);
-      }
-      folderSelect.value = folderPath;
-      folderInput.value = folderPath;
-    }
-    newFolderInput.style.display = 'none';
-    newFolderName.value = '';
-  });
-
-  newFolderName.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      confirmNewFolder.click();
-    } else if (e.key === 'Escape') {
-      cancelNewFolder.click();
-    }
-  });
-</script>
+{{ folderPickerScript(file.folder or '') }}
 {% endblock %}

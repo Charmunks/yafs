@@ -1,0 +1,133 @@
+{# Reusable Form Components #}
+
+{% macro folderPicker(currentFolder="") %}
+<div class="form-group">
+  <label for="folder">Folder (optional)</label>
+  <div class="folder-picker">
+    <select id="folderSelect" class="folder-select">
+      <option value="">Root (no folder)</option>
+    </select>
+    <button type="button" id="newFolderBtn" class="btn btn-secondary btn-small">New Folder</button>
+  </div>
+  <input type="hidden" id="folder" name="folder" value="{{ currentFolder }}">
+  <div id="newFolderInput" class="new-folder-input" style="display: none;">
+    <input type="text" id="newFolderName" placeholder="Enter folder path (e.g., photos/vacation)">
+    <button type="button" id="confirmNewFolder" class="btn btn-primary btn-small">Add</button>
+    <button type="button" id="cancelNewFolder" class="btn btn-secondary btn-small">Cancel</button>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro folderPickerScript(currentFolder="") %}
+<script>
+  (function() {
+    const folderSelect = document.getElementById('folderSelect');
+    const folderInput = document.getElementById('folder');
+    const newFolderBtn = document.getElementById('newFolderBtn');
+    const newFolderInput = document.getElementById('newFolderInput');
+    const newFolderName = document.getElementById('newFolderName');
+    const confirmNewFolder = document.getElementById('confirmNewFolder');
+    const cancelNewFolder = document.getElementById('cancelNewFolder');
+    const currentFolder = '{{ currentFolder }}';
+
+    async function loadFolders() {
+      try {
+        const response = await fetch('/api/folders');
+        const data = await response.json();
+        
+        folderSelect.innerHTML = '<option value="">Root (no folder)</option>';
+        for (const folder of data.folders) {
+          const option = document.createElement('option');
+          option.value = folder;
+          option.textContent = folder;
+          if (folder === currentFolder) {
+            option.selected = true;
+          }
+          folderSelect.appendChild(option);
+        }
+        
+        if (currentFolder && !data.folders.includes(currentFolder)) {
+          const option = document.createElement('option');
+          option.value = currentFolder;
+          option.textContent = currentFolder;
+          option.selected = true;
+          folderSelect.appendChild(option);
+        }
+      } catch (err) {
+        console.error('Failed to load folders:', err);
+      }
+    }
+
+    loadFolders();
+
+    folderSelect.addEventListener('change', () => {
+      folderInput.value = folderSelect.value;
+    });
+
+    newFolderBtn.addEventListener('click', () => {
+      newFolderInput.style.display = 'flex';
+      newFolderName.focus();
+    });
+
+    cancelNewFolder.addEventListener('click', () => {
+      newFolderInput.style.display = 'none';
+      newFolderName.value = '';
+    });
+
+    confirmNewFolder.addEventListener('click', () => {
+      const folderPath = newFolderName.value.trim().replace(/^\/+|\/+$/g, '');
+      if (folderPath) {
+        const exists = Array.from(folderSelect.options).some(opt => opt.value === folderPath);
+        if (!exists) {
+          const option = document.createElement('option');
+          option.value = folderPath;
+          option.textContent = folderPath;
+          folderSelect.appendChild(option);
+        }
+        folderSelect.value = folderPath;
+        folderInput.value = folderPath;
+      }
+      newFolderInput.style.display = 'none';
+      newFolderName.value = '';
+    });
+
+    newFolderName.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        confirmNewFolder.click();
+      } else if (e.key === 'Escape') {
+        cancelNewFolder.click();
+      }
+    });
+  })();
+</script>
+{% endmacro %}
+
+{% macro dropzone() %}
+{% from "partials/icons.njk" import uploadArrow %}
+<div class="dropzone" id="dropzone">
+  <input type="file" id="file" name="files" multiple required>
+  <div class="dropzone-content">
+    {{ uploadArrow(40) }}
+    <span class="dropzone-text">Drag & drop your file(s) here</span>
+    <span class="dropzone-hint">or click to browse</span>
+  </div>
+  <span class="file-name" id="fileName"></span>
+</div>
+{% endmacro %}
+
+{% macro publicToggle(checked=false) %}
+<div class="form-group">
+  <label class="toggle-label">
+    <input type="checkbox" name="isPublic" value="true" {% if checked %}checked{% endif %}>
+    <span class="toggle-text">Make file public</span>
+  </label>
+  <span class="form-hint">Public files can be viewed by anyone, even without signing in.</span>
+</div>
+{% endmacro %}
+
+{% macro errorMessage(error) %}
+{% if error %}
+  <div class="error">{{ error }}</div>
+{% endif %}
+{% endmacro %}

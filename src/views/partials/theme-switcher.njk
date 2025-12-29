@@ -1,0 +1,46 @@
+{# Theme Switcher Component #}
+{% from "partials/icons.njk" import monitor, sun, moon %}
+
+{% macro themeSwitcher() %}
+<div class="theme-switcher">
+  <button class="theme-btn" data-theme-value="system" title="System theme">
+    {{ monitor(20) }}
+  </button>
+  <button class="theme-btn" data-theme-value="light" title="Light theme">
+    {{ sun(20) }}
+  </button>
+  <button class="theme-btn" data-theme-value="dark" title="Dark theme">
+    {{ moon(20) }}
+  </button>
+</div>
+
+<script>
+  (function() {
+    const buttons = document.querySelectorAll('.theme-btn');
+    const saved = localStorage.getItem('theme');
+    
+    function updateActiveButton(theme) {
+      buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.themeValue === theme);
+      });
+    }
+    
+    function setTheme(theme) {
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+      }
+      updateActiveButton(theme);
+    }
+    
+    updateActiveButton(saved || 'system');
+    
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => setTheme(btn.dataset.themeValue));
+    });
+  })();
+</script>
+{% endmacro %}

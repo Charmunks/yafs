@@ -1,0 +1,114 @@
+/* Layout Components - Header, Navigation, etc. */
+
+header {
+  background-color: var(--mantle);
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--surface0);
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-user {
+  color: var(--subtext0);
+}
+
+.logout-form {
+  margin: 0;
+}
+
+/* Files Container & Grid */
+.files-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+/* Folder Header & Breadcrumbs */
+.folder-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.folder-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.breadcrumb-item {
+  color: var(--subtext0);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.breadcrumb-item:hover:not(.current) {
+  color: var(--rosewater);
+}
+
+.breadcrumb-item.current {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.breadcrumb-separator {
+  color: var(--surface1);
+  font-size: 0.9rem;
+}
+
+/* Back Link */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--subtext0);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
+/* File Detail Container */
+.file-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.file-detail-container .back-link {
+  margin-bottom: 1.5rem;
+}
