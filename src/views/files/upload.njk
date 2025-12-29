@@ -1,6 +1,6 @@
 {% extends "base.njk" %}
 {% from "partials/icons.njk" import upload as uploadIcon, check %}
-{% from "partials/forms.njk" import dropzone, folderPicker, folderPickerScript, publicToggle, errorMessage %}
+{% from "partials/forms.njk" import csrfInput, dropzone, folderPicker, folderPickerScript, publicToggle, errorMessage %}
 
 {% block content %}
 <div class="upload-container">
@@ -13,6 +13,7 @@
     {{ errorMessage(error) }}
 
     <form method="POST" action="/files/upload" enctype="multipart/form-data" class="upload-form">
+      {{ csrfInput() }}
       {{ dropzone() }}
 
       <div class="form-group single-file-only" id="customFilenameGroup">
@@ -148,6 +149,7 @@
       formData.append('file', file);
       formData.append('folder', folder);
       formData.append('isPublic', isPublic ? 'true' : 'false');
+      formData.append('_csrf', '{{ csrfToken }}');
 
       try {
         const response = await fetch('/files/upload/single', {

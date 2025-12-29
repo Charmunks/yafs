@@ -67,7 +67,11 @@ router.post("/registration", async (req, res) => {
 });
 
 router.post("/storage", async (req, res) => {
-  const { storagePath } = req.body;
+  const storagePath = req.body.storagePath?.trim();
+
+  if (!storagePath || storagePath.length > 500) {
+    return res.redirect("/settings");
+  }
 
   try {
     const existing = await db("settings").where({ key: "storage_path" }).first();
@@ -110,7 +114,7 @@ router.post("/markdown-sanitization", async (req, res) => {
 });
 
 router.post("/site-title", async (req, res) => {
-  const { siteTitle } = req.body;
+  const siteTitle = (req.body.siteTitle || "").slice(0, 100);
 
   try {
     const existing = await db("settings").where({ key: "site_title" }).first();

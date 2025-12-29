@@ -23,12 +23,14 @@ async function getStoragePath() {
 }
 
 const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const storagePath = await getStoragePath();
-    const userFolder = path.join(storagePath, String(req.session.userId));
-    
-    fs.mkdirSync(userFolder, { recursive: true });
-    cb(null, userFolder);
+  destination: (req, file, cb) => {
+    getStoragePath()
+      .then((storagePath) => {
+        const userFolder = path.join(storagePath, String(req.session.userId));
+        fs.mkdirSync(userFolder, { recursive: true });
+        cb(null, userFolder);
+      })
+      .catch((err) => cb(err));
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -163,8 +165,10 @@ router.get("/thumb/:id", async (req, res) => {
       return res.sendFile(file.path);
     }
 
-    const width = parseInt(req.query.w) || 300;
-    const quality = parseInt(req.query.q) || 70;
+    const widthParam = parseInt(req.query.w, 10);
+    const qualityParam = parseInt(req.query.q, 10);
+    const width = Number.isFinite(widthParam) ? Math.min(Math.max(widthParam, 50), 2000) : 300;
+    const quality = Number.isFinite(qualityParam) ? Math.min(Math.max(qualityParam, 10), 90) : 70;
 
     res.type('webp');
     sharp(file.path)
@@ -237,10 +241,36 @@ router.post("/edit/:id", requireAuth, async (req, res) => {
       });
     }
 
+    if (filename.length > 255) {
+      return res.render("files/edit", {
+        title: "Edit File",
+        file,
+        error: "Filename must be 255 characters or less"
+      });
+    }
+
+    const description = req.body.description?.trim() || null;
+    if (description && description.length > 1000) {
+      return res.render("files/edit", {
+        title: "Edit File",
+        file,
+        error: "Description must be 1000 characters or less"
+      });
+    }
+
+    const folder = req.body.folder?.trim() || null;
+    if (folder && folder.length > 255) {
+      return res.render("files/edit", {
+        title: "Edit File",
+        file,
+        error: "Folder path must be 255 characters or less"
+      });
+    }
+
     await db("files").where({ id: req.params.id }).update({
       filename,
-      description: req.body.description?.trim() || null,
-      folder: req.body.folder?.trim() || null,
+      description,
+      folder,
       isPublic: req.body.isPublic === "true",
       updated_at: db.fn.now()
     });

@@ -1,6 +1,6 @@
 {% extends "base.njk" %}
 {% from "partials/icons.njk" import edit as editIcon, check %}
-{% from "partials/forms.njk" import folderPicker, folderPickerScript, publicToggle, errorMessage %}
+{% from "partials/forms.njk" import csrfInput, folderPicker, folderPickerScript, publicToggle, errorMessage %}
 
 {% block content %}
 <div class="upload-container">
@@ -13,6 +13,7 @@
     {{ errorMessage(error) }}
 
     <form method="POST" action="/files/edit/{{ file.id }}" class="upload-form">
+      {{ csrfInput() }}
       <div class="form-group">
         <label for="filename">Filename</label>
         <input type="text" id="filename" name="filename" value="{{ file.filename }}" required>

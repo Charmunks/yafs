@@ -25,7 +25,7 @@ router.get("/folders", async (req, res) => {
 
 router.get("/search", async (req, res) => {
   const userId = req.session.userId;
-  const query = req.query.q || "";
+  const query = (req.query.q || "").slice(0, 100);
 
   if (!query.trim()) {
     return res.json({ files: [] });

@@ -2,6 +2,9 @@ import "dotenv/config";
 import express from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import cookieParser from "cookie-parser";
+import { doubleCsrf } from "csrf-csrf";
+import helmet from "helmet";
 import nunjucks from "nunjucks";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -19,6 +22,11 @@ const PgSession = connectPgSimple(session);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET) {
+  throw new Error("SESSION_SECRET environment variable must be set");
+}
+
 nunjucks.configure(path.join(__dirname, "views"), {
   autoescape: true,
   express: app,
@@ -27,8 +35,14 @@ nunjucks.configure(path.join(__dirname, "views"), {
 
 app.set("view engine", "njk");
 
+app.disable("x-powered-by");
+app.use(helmet({
+  contentSecurityPolicy: false
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
@@ -39,16 +53,35 @@ app.use(
       },
       tableName: "session"
     }),
-    secret: process.env.SESSION_SECRET || "change-this-secret",
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production"
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax"
     }
   })
 );
+
+const { doubleCsrfProtection, generateToken } = doubleCsrf({
+  getSecret: () => SESSION_SECRET,
+  cookieName: "__csrf",
+  cookieOptions: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production"
+  },
+  getTokenFromRequest: (req) => req.body._csrf || req.headers["x-csrf-token"]
+});
+
+app.use(doubleCsrfProtection);
+
+app.use((req, res, next) => {
+  res.locals.csrfToken = generateToken(req, res);
+  next();
+});
 
 app.use(async (req, res, next) => {
   res.locals.user = req.session.userId

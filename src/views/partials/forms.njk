@@ -1,5 +1,9 @@
 {# Reusable Form Components #}
 
+{% macro csrfInput() %}
+<input type="hidden" name="_csrf" value="{{ csrfToken }}">
+{% endmacro %}
+
 {% macro folderPicker(currentFolder="") %}
 <div class="form-group">
   <label for="folder">Folder (optional)</label>

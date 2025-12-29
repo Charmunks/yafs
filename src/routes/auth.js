@@ -22,6 +22,13 @@ router.post("/login", async (req, res) => {
     });
   }
 
+  if (username.length > 50 || password.length > 128) {
+    return res.render("auth/login", {
+      title: "Login",
+      error: "Invalid username or password"
+    });
+  }
+
   try {
     const user = await db("users").where({ username }).first();
 
@@ -41,9 +48,18 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    req.session.userId = user.id;
-    req.session.username = user.username;
-    res.redirect("/");
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error("Session regeneration error:", err);
+        return res.render("auth/login", {
+          title: "Login",
+          error: "An error occurred. Please try again."
+        });
+      }
+      req.session.userId = user.id;
+      req.session.username = user.username;
+      res.redirect("/");
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.render("auth/login", {
@@ -93,6 +109,20 @@ router.post("/register", async (req, res) => {
     });
   }
 
+  if (username.length > 50) {
+    return res.render("auth/register", {
+      title: "Register",
+      error: "Username must be 50 characters or less"
+    });
+  }
+
+  if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+    return res.render("auth/register", {
+      title: "Register",
+      error: "Username can only contain letters, numbers, underscores, and hyphens"
+    });
+  }
+
   if (password !== confirmPassword) {
     return res.render("auth/register", {
       title: "Register",
@@ -100,10 +130,10 @@ router.post("/register", async (req, res) => {
     });
   }
 
-  if (password.length < 8) {
+  if (password.length < 8 || password.length > 128) {
     return res.render("auth/register", {
       title: "Register",
-      error: "Password must be at least 8 characters"
+      error: "Password must be between 8 and 128 characters"
     });
   }
 
