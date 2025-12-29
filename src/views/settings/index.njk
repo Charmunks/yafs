@@ -29,13 +29,51 @@
 
   <section class="settings-section">
     <h2>Registration</h2>
-    <form method="POST" action="/settings/registration" class="settings-form">
-      <label class="toggle-label">
-        <input type="checkbox" name="enabled" {% if registrationEnabled %}checked{% endif %}>
-        <span>Allow new account registration</span>
-      </label>
+    <form method="POST" action="/settings/registration" class="settings-form-vertical">
+      <div class="radio-group">
+        <label class="radio-label">
+          <input type="radio" name="registrationMode" value="open" {% if registrationMode == 'open' %}checked{% endif %}>
+          <span>Fully open registration</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="registrationMode" value="key" {% if registrationMode == 'key' %}checked{% endif %}>
+          <span>Registration key required</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="registrationMode" value="disabled" {% if registrationMode == 'disabled' or not registrationMode %}checked{% endif %}>
+          <span>Registration disabled</span>
+        </label>
+      </div>
+      
+      <div class="form-group" id="registrationKeyGroup" style="width: 100%;">
+        <label for="registrationKey">Registration Key</label>
+        <input type="text" id="registrationKey" name="registrationKey" value="{{ registrationKey }}" placeholder="Enter a key users must provide to register">
+      </div>
+      
+      <div class="form-group" id="registrationDisabledGroup" style="width: 100%; gap: 0.5rem;">
+        <label for="registrationDisabledMessage">Disabled Message (optional)</label>
+        <textarea id="registrationDisabledMessage" name="registrationDisabledMessage" rows="3" placeholder="Explain why registration is disabled" style="margin-top: 0.5rem;">{{ registrationDisabledMessage }}</textarea>
+      </div>
+      
       <button type="submit" class="btn">Save</button>
     </form>
+    
+    <script>
+      (function() {
+        const radios = document.querySelectorAll('input[name="registrationMode"]');
+        const keyGroup = document.getElementById('registrationKeyGroup');
+        const disabledGroup = document.getElementById('registrationDisabledGroup');
+        
+        function updateVisibility() {
+          const selected = document.querySelector('input[name="registrationMode"]:checked').value;
+          keyGroup.style.display = selected === 'key' ? 'block' : 'none';
+          disabledGroup.style.display = selected === 'disabled' ? 'block' : 'none';
+        }
+        
+        radios.forEach(radio => radio.addEventListener('change', updateVisibility));
+        updateVisibility();
+      })();
+    </script>
   </section>
 
   <section class="settings-section">

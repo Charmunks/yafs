@@ -20,8 +20,16 @@ router.use(requireAdmin);
 
 router.get("/", async (req, res) => {
   try {
-    const registrationSetting = await db("settings")
-      .where({ key: "registration_enabled" })
+    const registrationModeSetting = await db("settings")
+      .where({ key: "registration_mode" })
+      .first();
+
+    const registrationKeySetting = await db("settings")
+      .where({ key: "registration_key" })
+      .first();
+
+    const registrationDisabledMessageSetting = await db("settings")
+      .where({ key: "registration_disabled_message" })
       .first();
 
     const storagePathSetting = await db("settings")
@@ -44,7 +52,9 @@ router.get("/", async (req, res) => {
 
     res.render("settings/index", {
       title: "Settings",
-      registrationEnabled: registrationSetting?.value === "true",
+      registrationMode: registrationModeSetting?.value || "disabled",
+      registrationKey: registrationKeySetting?.value || "",
+      registrationDisabledMessage: registrationDisabledMessageSetting?.value || "",
       storagePath: storagePathSetting?.value || defaultStoragePath,
       markdownSanitizationEnabled: markdownSanitizationSetting?.value !== "false",
       pageTitleSetting: siteTitleSetting?.value || "",
@@ -60,13 +70,27 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/registration", async (req, res) => {
-  const { enabled } = req.body;
-  const newValue = enabled === "on" ? "true" : "false";
+  const { registrationMode, registrationKey, registrationDisabledMessage } = req.body;
+  const validModes = ["open", "key", "disabled"];
+  const mode = validModes.includes(registrationMode) ? registrationMode : "disabled";
 
   try {
-    await db("settings")
-      .where({ key: "registration_enabled" })
-      .update({ value: newValue, updated_at: db.fn.now() });
+    const settingsToUpdate = [
+      { key: "registration_mode", value: mode },
+      { key: "registration_key", value: (registrationKey || "").slice(0, 100) },
+      { key: "registration_disabled_message", value: (registrationDisabledMessage || "").slice(0, 500) }
+    ];
+
+    for (const setting of settingsToUpdate) {
+      const existing = await db("settings").where({ key: setting.key }).first();
+      if (existing) {
+        await db("settings")
+          .where({ key: setting.key })
+          .update({ value: setting.value, updated_at: db.fn.now() });
+      } else {
+        await db("settings").insert({ key: setting.key, value: setting.value });
+      }
+    }
 
     res.redirect("/settings");
   } catch (err) {

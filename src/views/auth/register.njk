@@ -4,11 +4,26 @@
 <div class="auth-container">
   <h1>Register</h1>
   
+  {% if registrationDisabled %}
+  <div class="error-message">Registration is currently disabled</div>
+  {% if disabledMessage %}
+  <p class="disabled-reason">{{ disabledMessage }}</p>
+  {% endif %}
+  <p class="auth-link">Already have an account? <a href="/auth/login">Login</a></p>
+  {% else %}
+  
   {% if error %}
   <div class="error-message">{{ error }}</div>
   {% endif %}
   
   <form method="POST" action="/auth/register" class="auth-form">
+    {% if requiresKey %}
+    <div class="form-group">
+      <label for="registrationKey">Registration Key</label>
+      <input type="text" id="registrationKey" name="registrationKey" required autocomplete="off">
+    </div>
+    {% endif %}
+    
     <div class="form-group">
       <label for="username">Username</label>
       <input type="text" id="username" name="username" required autocomplete="username">
@@ -28,5 +43,6 @@
   </form>
   
   <p class="auth-link">Already have an account? <a href="/auth/login">Login</a></p>
+  {% endif %}
 </div>
 {% endblock %}

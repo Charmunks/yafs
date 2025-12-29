@@ -75,33 +75,66 @@ router.get("/register", async (req, res) => {
     return res.redirect("/");
   }
 
-  const registrationSetting = await db("settings")
-    .where({ key: "registration_enabled" })
+  const registrationModeSetting = await db("settings")
+    .where({ key: "registration_mode" })
     .first();
 
-  if (registrationSetting?.value !== "true") {
+  const registrationMode = registrationModeSetting?.value || "disabled";
+
+  if (registrationMode === "disabled") {
+    const disabledMessageSetting = await db("settings")
+      .where({ key: "registration_disabled_message" })
+      .first();
+
     return res.render("auth/register", {
       title: "Register",
-      error: "Registration is currently disabled"
+      registrationDisabled: true,
+      disabledMessage: disabledMessageSetting?.value || ""
     });
   }
 
-  res.render("auth/register", { title: "Register" });
+  res.render("auth/register", {
+    title: "Register",
+    requiresKey: registrationMode === "key"
+  });
 });
 
 router.post("/register", async (req, res) => {
-  const registrationSetting = await db("settings")
-    .where({ key: "registration_enabled" })
+  const registrationModeSetting = await db("settings")
+    .where({ key: "registration_mode" })
     .first();
 
-  if (registrationSetting?.value !== "true") {
+  const registrationMode = registrationModeSetting?.value || "disabled";
+
+  if (registrationMode === "disabled") {
+    const disabledMessageSetting = await db("settings")
+      .where({ key: "registration_disabled_message" })
+      .first();
+
     return res.render("auth/register", {
       title: "Register",
-      error: "Registration is currently disabled"
+      registrationDisabled: true,
+      disabledMessage: disabledMessageSetting?.value || ""
     });
   }
 
-  const { username, password, confirmPassword } = req.body;
+  const { username, password, confirmPassword, registrationKey } = req.body;
+
+  if (registrationMode === "key") {
+    const registrationKeySetting = await db("settings")
+      .where({ key: "registration_key" })
+      .first();
+
+    const expectedKey = registrationKeySetting?.value || "";
+
+    if (!registrationKey || registrationKey !== expectedKey) {
+      return res.render("auth/register", {
+        title: "Register",
+        error: "Invalid registration key",
+        requiresKey: true
+      });
+    }
+  }
 
   if (!username || !password || !confirmPassword) {
     return res.render("auth/register", {

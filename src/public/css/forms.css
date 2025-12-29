@@ -51,6 +51,26 @@
   accent-color: var(--rosewater);
 }
 
+/* Radio Labels */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--rosewater);
+}
+
 /* Folder Picker */
 .folder-picker {
   display: flex;

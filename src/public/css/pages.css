@@ -58,6 +58,17 @@
   justify-content: space-between;
 }
 
+.settings-form-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.settings-form-vertical .btn {
+  align-self: flex-start;
+}
+
 /* Upload Pages */
 .upload-container {
   max-width: 500px;
