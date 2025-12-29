@@ -377,7 +377,12 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    res.redirect(`/files/download/${file.id}`);
+    return res.render("files/other", {
+      title: file.filename,
+      file,
+      isOwner
+    })
+
   } catch (err) {
     console.error("File detail error:", err);
     res.status(500).send("Failed to load file");

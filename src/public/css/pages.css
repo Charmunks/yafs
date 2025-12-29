@@ -137,6 +137,24 @@
   border-radius: 4px;
 }
 
+.file-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.file-preview img {
+  max-width: 50%;
+  max-height: 30vh;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
 .file-info {
   text-align: center;
   margin-bottom: 1.5rem;
