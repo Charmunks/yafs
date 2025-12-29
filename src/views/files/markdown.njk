@@ -1,10 +1,16 @@
 {% extends "base.njk" %}
 {% from "partials/back-link.njk" import backLink %}
+{% from "partials/back-link-folder.njk" import backLinkFolder %}
 {% from "partials/file-detail-actions.njk" import fileDetailActions %}
 
 {% block content %}
 <div class="file-detail-container">
+  
+{% if file.folder %}
+  {{ backLinkFolder(file.folder) }}
+{% else %}
   {{ backLink() }}
+{% endif %}
 
   <div class="markdown-preview">
     {{ content | safe }}

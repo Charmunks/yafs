@@ -1,5 +1,6 @@
 {% extends "base.njk" %}
 {% from "partials/back-link.njk" import backLink %}
+{% from "partials/back-link-folder.njk" import backLinkFolder %}
 {% from "partials/file-detail-actions.njk" import fileDetailActions %}
 
 {% block meta %}
@@ -17,7 +18,12 @@
 
 {% block content %}
 <div class="file-detail-container">
+  
+{% if file.folder %}
+  {{ backLinkFolder(file.folder) }}
+{% else %}
   {{ backLink() }}
+{% endif %}
 
   <div class="image-preview">
     <img src="/files/view/{{ file.id }}" alt="{{ file.filename }}">
