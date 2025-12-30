@@ -1,6 +1,6 @@
 {% extends "base.njk" %}
 {% from "partials/icons.njk" import edit as editIcon, check %}
-{% from "partials/forms.njk" import folderPicker, folderPickerScript, publicToggle, errorMessage %}
+{% from "partials/forms.njk" import folderPicker, folderPickerScript, publicToggle, unlistedToggle, errorMessage %}
 
 {% block content %}
 <div class="upload-container">
@@ -25,6 +25,7 @@
 
       {{ folderPicker(file.folder or '') }}
       {{ publicToggle(file.isPublic) }}
+      {{ unlistedToggle(file.isUnlisted) }}
 
       <div class="upload-actions">
         <a href="/files/{{ file.id }}" class="btn btn-secondary">Cancel</a>

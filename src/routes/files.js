@@ -64,6 +64,7 @@ router.post("/upload", requireAuth, upload.array("files"), async (req, res) => {
 
     const folder = req.body.folder || null;
     const isPublic = req.body.isPublic === "true";
+    const isUnlisted = req.body.isUnlisted === "true";
     const isBulk = req.files.length > 1;
 
     for (const file of req.files) {
@@ -85,6 +86,7 @@ router.post("/upload", requireAuth, upload.array("files"), async (req, res) => {
         path: file.path,
         ownerId: req.session.userId,
         isPublic,
+        isUnlisted,
         description
       });
 
@@ -109,6 +111,7 @@ router.post("/upload/single", requireAuth, upload.single("file"), async (req, re
 
     const folder = req.body.folder || null;
     const isPublic = req.body.isPublic === "true";
+    const isUnlisted = req.body.isUnlisted === "true";
     const displayFilename = req.file.originalname;
 
     const [inserted] = await db("files").insert({
@@ -117,6 +120,7 @@ router.post("/upload/single", requireAuth, upload.single("file"), async (req, re
       path: req.file.path,
       ownerId: req.session.userId,
       isPublic,
+      isUnlisted,
       description: null
     }).returning("id");
 
@@ -142,7 +146,8 @@ router.get("/view/:id", async (req, res) => {
     }
 
     const isOwner = req.session.userId && file.ownerId === req.session.userId;
-    if (!file.isPublic && !isOwner) {
+    const isAccessible = file.isPublic || file.isUnlisted || isOwner;
+    if (!isAccessible) {
       return res.status(403).render("errors/403");
     }
 
@@ -166,7 +171,8 @@ router.get("/thumb/:id", async (req, res) => {
     }
 
     const isOwner = req.session.userId && file.ownerId === req.session.userId;
-    if (!file.isPublic && !isOwner) {
+    const isAccessible = file.isPublic || file.isUnlisted || isOwner;
+    if (!isAccessible) {
       return res.status(403).render("errors/403");
     }
 
@@ -207,7 +213,8 @@ router.get("/download/:id", async (req, res) => {
     }
 
     const isOwner = req.session.userId && file.ownerId === req.session.userId;
-    if (!file.isPublic && !isOwner) {
+    const isAccessible = file.isPublic || file.isUnlisted || isOwner;
+    if (!isAccessible) {
       return res.status(403).render("errors/403");
     }
 
@@ -296,6 +303,7 @@ router.post("/edit/:id", requireAuth, async (req, res) => {
       description,
       folder,
       isPublic: req.body.isPublic === "true",
+      isUnlisted: req.body.isUnlisted === "true",
       updated_at: db.fn.now()
     });
 
@@ -331,7 +339,8 @@ router.get("/:id", async (req, res) => {
     }
 
     const isOwner = req.session.userId && file.ownerId === req.session.userId;
-    if (!file.isPublic && !isOwner) {
+    const isAccessible = file.isPublic || file.isUnlisted || isOwner;
+    if (!isAccessible) {
       return res.status(403).render("errors/403");
     }
 

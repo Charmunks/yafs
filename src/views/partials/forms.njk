@@ -126,6 +126,16 @@
 </div>
 {% endmacro %}
 
+{% macro unlistedToggle(checked=false) %}
+<div class="form-group">
+  <label class="toggle-label">
+    <input type="checkbox" name="isUnlisted" value="true" {% if checked %}checked{% endif %}>
+    <span class="toggle-text">Make file unlisted</span>
+  </label>
+  <span class="form-hint">Unlisted files are accessible via direct link but don't appear in listings.</span>
+</div>
+{% endmacro %}
+
 {% macro errorMessage(error) %}
 {% if error %}
   <div class="error">{{ error }}</div>

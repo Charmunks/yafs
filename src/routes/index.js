@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
 
   if (!userId) {
     const allFolders = await db("files")
-      .where({ isPublic: true })
+      .where({ isPublic: true, isUnlisted: false })
       .whereNotNull("folder")
       .distinct("folder")
       .pluck("folder");
@@ -48,7 +48,7 @@ router.get("/", async (req, res) => {
     const topLevelFolders = getTopLevelFolders(allFolders);
 
     const publicFiles = await db("files")
-      .where({ isPublic: true })
+      .where({ isPublic: true, isUnlisted: false })
       .whereNull("folder")
       .orderBy("created_at", "desc");
 
@@ -61,7 +61,7 @@ router.get("/", async (req, res) => {
 
   const allFolders = await db("files")
     .where(function() {
-      this.where({ ownerId: userId }).orWhere({ isPublic: true });
+      this.where({ ownerId: userId }).orWhere({ isPublic: true, isUnlisted: false });
     })
     .whereNotNull("folder")
     .distinct("folder")
@@ -71,7 +71,7 @@ router.get("/", async (req, res) => {
 
   const files = await db("files")
     .where(function() {
-      this.where({ ownerId: userId }).orWhere({ isPublic: true });
+      this.where({ ownerId: userId }).orWhere({ isPublic: true, isUnlisted: false });
     })
     .whereNull("folder")
     .orderBy("created_at", "desc");
@@ -206,13 +206,13 @@ router.get("/folder/*", async (req, res) => {
   const allFolders = userId
     ? await db("files")
         .where(function() {
-          this.where({ ownerId: userId }).orWhere({ isPublic: true });
+          this.where({ ownerId: userId }).orWhere({ isPublic: true, isUnlisted: false });
         })
         .whereNotNull("folder")
         .distinct("folder")
         .pluck("folder")
     : await db("files")
-        .where({ isPublic: true })
+        .where({ isPublic: true, isUnlisted: false })
         .whereNotNull("folder")
         .distinct("folder")
         .pluck("folder");
@@ -224,10 +224,10 @@ router.get("/folder/*", async (req, res) => {
     .orderBy("created_at", "desc");
 
   if (!userId) {
-    filesQuery.where({ isPublic: true });
+    filesQuery.where({ isPublic: true, isUnlisted: false });
   } else {
     filesQuery.where(function() {
-      this.where({ ownerId: userId }).orWhere({ isPublic: true });
+      this.where({ ownerId: userId }).orWhere({ isPublic: true, isUnlisted: false });
     });
   }
 
