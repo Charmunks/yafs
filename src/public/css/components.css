@@ -150,6 +150,7 @@ button.btn {
   align-items: center;
   text-align: center;
   transition: border-color 0.2s;
+  height: 200px;
 }
 
 .file-card:hover {
@@ -163,21 +164,23 @@ button.btn {
 
 .file-icon {
   width: 100%;
-  aspect-ratio: 1;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--rosewater);
   margin-bottom: 0.75rem;
+  flex-shrink: 0;
 }
 
 .file-thumbnail {
   width: 100%;
-  aspect-ratio: 1;
+  height: 100px;
   margin-bottom: 0.75rem;
   border-radius: 4px;
   overflow: hidden;
   background-color: var(--surface0);
+  flex-shrink: 0;
 }
 
 .file-thumbnail img {
@@ -251,7 +254,6 @@ button.btn {
   text-decoration: none;
   cursor: pointer;
   justify-content: center;
-  min-height: 200px;
 }
 
 .folder-card .file-icon {
