@@ -2,6 +2,8 @@ import express from "express";
 import os from "os";
 import path from "path";
 import fs from "fs/promises";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
 import db from "../db/index.js";
 
 const router = express.Router();
@@ -243,6 +245,41 @@ router.post("/users/:id/delete", async (req, res) => {
     res.redirect("/settings/users");
   } catch (err) {
     console.error("Delete user error:", err);
+    res.redirect("/settings/users");
+  }
+});
+
+router.post("/users/:id/reset-password", async (req, res) => {
+  const userId = parseInt(req.params.id);
+
+  if (userId === req.session.userId) {
+    return res.redirect("/settings/users");
+  }
+
+  try {
+    const user = await db("users").where({ id: userId }).first();
+    if (!user) {
+      return res.redirect("/settings/users");
+    }
+
+    const newPassword = crypto.randomBytes(8).toString("hex");
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await db("users")
+      .where({ id: userId })
+      .update({ password: hashedPassword, updated_at: db.fn.now() });
+
+    const users = await db("users")
+      .select("id", "username", "is_admin", "created_at")
+      .orderBy("created_at", "desc");
+
+    res.render("settings/users", {
+      title: "User Management",
+      users,
+      success: `Password for ${user.username} has been reset to: ${newPassword}`
+    });
+  } catch (err) {
+    console.error("Reset password error:", err);
     res.redirect("/settings/users");
   }
 });
