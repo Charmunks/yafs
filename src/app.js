@@ -3,6 +3,7 @@ import express from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import nunjucks from "nunjucks";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -19,6 +20,8 @@ const PgSession = connectPgSimple(session);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.set("trust proxy", 1);
 
 const SESSION_SECRET = process.env.SESSION_SECRET;
 if (!SESSION_SECRET) {
@@ -47,6 +50,14 @@ app.disable("x-powered-by");
 app.use(helmet({
   contentSecurityPolicy: false
 }));
+
+const limiter = rateLimit({
+  windowMs: 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use(limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
