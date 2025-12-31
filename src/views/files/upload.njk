@@ -1,6 +1,6 @@
 {% extends "base.njk" %}
 {% from "partials/icons.njk" import upload as uploadIcon, check %}
-{% from "partials/forms.njk" import dropzone, folderPicker, folderPickerScript, publicToggle, unlistedToggle, errorMessage %}
+{% from "partials/forms.njk" import dropzone, folderPicker, folderPickerScript, visibilitySwitcher, errorMessage %}
 
 {% block content %}
 <div class="upload-container">
@@ -26,8 +26,7 @@
       </div>
 
       {{ folderPicker() }}
-      {{ publicToggle() }}
-      {{ unlistedToggle() }}
+      {{ visibilitySwitcher() }}
 
       <div class="upload-progress" id="uploadProgress" style="display: none;">
         <div class="progress-info">
@@ -129,8 +128,9 @@
     e.preventDefault();
 
     const folder = document.getElementById('folder').value;
-    const isPublic = document.querySelector('input[name="isPublic"]').checked;
-    const isUnlisted = document.querySelector('input[name="isUnlisted"]').checked;
+    const visibility = document.querySelector('input[name="visibility"]:checked').value;
+    const isPublic = visibility === 'public';
+    const isUnlisted = visibility === 'unlisted';
 
     uploadProgress.style.display = 'block';
     uploadActions.style.display = 'none';

@@ -136,6 +136,41 @@
 </div>
 {% endmacro %}
 
+{% macro visibilitySwitcher(value="private") %}
+<div class="form-group">
+  <label>Visibility</label>
+  <div class="visibility-switcher">
+    <label class="visibility-option">
+      <input type="radio" name="visibility" value="private" {% if value == "private" %}checked{% endif %}>
+      <span class="visibility-label">Private</span>
+    </label>
+    <label class="visibility-option">
+      <input type="radio" name="visibility" value="unlisted" {% if value == "unlisted" %}checked{% endif %}>
+      <span class="visibility-label">Unlisted</span>
+    </label>
+    <label class="visibility-option">
+      <input type="radio" name="visibility" value="public" {% if value == "public" %}checked{% endif %}>
+      <span class="visibility-label">Public</span>
+    </label>
+  </div>
+  <span class="form-hint visibility-hint" data-private="Private files are only visible to you." data-unlisted="Unlisted files are accessible via direct link but don't appear in listings." data-public="Public files can be viewed by anyone, even without signing in."></span>
+</div>
+<script>
+  (function() {
+    const radios = document.querySelectorAll('input[name="visibility"]');
+    const hint = document.querySelector('.visibility-hint');
+    function updateHint() {
+      const checked = document.querySelector('input[name="visibility"]:checked');
+      if (checked && hint) {
+        hint.textContent = hint.dataset[checked.value];
+      }
+    }
+    radios.forEach(r => r.addEventListener('change', updateHint));
+    updateHint();
+  })();
+</script>
+{% endmacro %}
+
 {% macro errorMessage(error) %}
 {% if error %}
   <div class="error">{{ error }}</div>

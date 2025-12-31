@@ -71,6 +71,53 @@
   accent-color: var(--rosewater);
 }
 
+/* Visibility Switcher */
+.visibility-switcher {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--surface1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.visibility-option {
+  flex: 1;
+  display: flex;
+  cursor: pointer;
+}
+
+.visibility-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.visibility-label {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--subtext0);
+  background-color: var(--mantle);
+  border-right: 1px solid var(--surface1);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.visibility-option:last-child .visibility-label {
+  border-right: none;
+}
+
+.visibility-option input[type="radio"]:checked + .visibility-label {
+  background-color: var(--rosewater);
+  color: var(--base);
+}
+
+.visibility-option input[type="radio"]:focus + .visibility-label {
+  outline: 2px solid var(--rosewater);
+  outline-offset: -2px;
+}
+
 /* Folder Picker */
 .folder-picker {
   display: flex;
