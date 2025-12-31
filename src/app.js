@@ -51,6 +51,8 @@ app.use(helmet({
   contentSecurityPolicy: false
 }));
 
+app.use(express.static(path.join(__dirname, "public")));
+
 const limiter = rateLimit({
   windowMs: 1000,
   limit: 5,
@@ -61,7 +63,6 @@ app.use(limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
   session({

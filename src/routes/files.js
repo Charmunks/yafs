@@ -103,6 +103,78 @@ router.post("/upload", requireAuth, upload.array("files"), async (req, res) => {
   }
 });
 
+router.post("/upload/url", requireAuth, express.json(), async (req, res) => {
+  try {
+    const { url, folder, isPublic, isUnlisted, customFilename, description } = req.body;
+
+    if (!url) {
+      return res.status(400).json({ error: "No URL provided" });
+    }
+
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      return res.status(400).json({ error: "Invalid URL" });
+    }
+
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return res.status(400).json({ error: "Only HTTP(S) URLs are supported" });
+    }
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      return res.status(400).json({ error: `Failed to fetch URL: ${response.status}` });
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    const urlPath = parsedUrl.pathname;
+    let ext = path.extname(urlPath);
+    
+    if (!ext) {
+      if (contentType.includes("image/png")) ext = ".png";
+      else if (contentType.includes("image/jpeg")) ext = ".jpg";
+      else if (contentType.includes("image/gif")) ext = ".gif";
+      else if (contentType.includes("image/webp")) ext = ".webp";
+      else if (contentType.includes("video/mp4")) ext = ".mp4";
+      else if (contentType.includes("application/pdf")) ext = ".pdf";
+      else ext = "";
+    }
+
+    const urlFilename = path.basename(urlPath) || "downloaded-file";
+    const baseName = customFilename?.trim() || path.basename(urlFilename, ext) || "downloaded-file";
+    const displayFilename = `${baseName}${ext}`;
+
+    const storagePath = await getStoragePath();
+    const userFolder = path.join(storagePath, String(req.session.userId));
+    fs.mkdirSync(userFolder, { recursive: true });
+
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const diskFilename = `${baseName}-${uniqueSuffix}${ext}`;
+    const filePath = path.join(userFolder, diskFilename);
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    fs.writeFileSync(filePath, buffer);
+
+    const [inserted] = await db("files").insert({
+      filename: displayFilename,
+      folder: folder || null,
+      path: filePath,
+      ownerId: req.session.userId,
+      isPublic: isPublic === true,
+      isUnlisted: isUnlisted === true,
+      description: description?.trim() || null
+    }).returning("id");
+
+    console.log(`[UPLOAD] User ${req.session.userId} uploaded "${displayFilename}" from URL (${buffer.length} bytes) to ${folder || "root"}`);
+
+    res.json({ success: true, id: inserted.id || inserted, filename: displayFilename });
+  } catch (err) {
+    console.error("URL upload error:", err);
+    res.status(500).json({ error: "Failed to upload from URL" });
+  }
+});
+
 router.post("/upload/single", requireAuth, upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {

@@ -12,8 +12,23 @@
 
     {{ errorMessage(error) }}
 
-    <form method="POST" action="/files/upload" enctype="multipart/form-data" class="upload-form">
-      {{ dropzone() }}
+    <div class="upload-tabs">
+      <button type="button" class="upload-tab active" data-tab="file">Upload File</button>
+      <button type="button" class="upload-tab" data-tab="url">From URL</button>
+    </div>
+
+    <form method="POST" action="/files/upload" enctype="multipart/form-data" class="upload-form" id="fileForm">
+      <div class="tab-content" id="fileTab">
+        {{ dropzone() }}
+      </div>
+
+      <div class="tab-content" id="urlTab" style="display: none;">
+        <div class="form-group">
+          <label for="fileUrl">File URL</label>
+          <input type="url" id="fileUrl" name="fileUrl" placeholder="https://example.com/image.png">
+          <span class="form-hint">Enter a direct link to the file you want to upload</span>
+        </div>
+      </div>
 
       <div class="form-group single-file-only" id="customFilenameGroup">
         <label for="customFilename">Custom filename (optional)</label>
@@ -65,6 +80,32 @@
   const progressBar = document.getElementById('progressBar');
   const progressCurrent = document.getElementById('progressCurrent');
   const submitBtn = document.getElementById('submitBtn');
+  const tabs = document.querySelectorAll('.upload-tab');
+  const fileTab = document.getElementById('fileTab');
+  const urlTab = document.getElementById('urlTab');
+  const fileUrlInput = document.getElementById('fileUrl');
+  let activeTab = 'file';
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeTab = tab.dataset.tab;
+      
+      if (activeTab === 'file') {
+        fileTab.style.display = '';
+        urlTab.style.display = 'none';
+        fileInput.required = true;
+        fileUrlInput.required = false;
+      } else {
+        fileTab.style.display = 'none';
+        urlTab.style.display = '';
+        fileInput.required = false;
+        fileUrlInput.required = true;
+        singleFileFields.forEach(el => el.style.display = '');
+      }
+    });
+  });
 
   function updateFileDisplay() {
     const count = fileInput.files.length;
@@ -122,6 +163,53 @@
   });
 
   form.addEventListener('submit', async (e) => {
+    if (activeTab === 'url') {
+      e.preventDefault();
+      const url = fileUrlInput.value.trim();
+      if (!url) return;
+
+      const folder = document.getElementById('folder').value;
+      const visibility = document.querySelector('input[name="visibility"]:checked').value;
+      const isPublic = visibility === 'public';
+      const isUnlisted = visibility === 'unlisted';
+      const customFilename = document.getElementById('customFilename').value.trim();
+      const description = document.getElementById('description').value.trim();
+
+      uploadProgress.style.display = 'block';
+      uploadActions.style.display = 'none';
+      progressText.textContent = 'Downloading file...';
+      progressCount.textContent = '';
+      progressCurrent.textContent = url;
+      progressBar.style.width = '50%';
+
+      try {
+        const response = await fetch('/files/upload/url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, folder, isPublic, isUnlisted, customFilename, description })
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          progressText.textContent = 'Complete!';
+          progressCurrent.textContent = 'File uploaded successfully';
+          progressBar.style.width = '100%';
+          setTimeout(() => { window.location.href = '/'; }, 1000);
+        } else {
+          progressText.textContent = 'Error';
+          progressCurrent.textContent = result.error || 'Failed to upload from URL';
+          progressBar.style.width = '0%';
+          uploadActions.style.display = '';
+        }
+      } catch (err) {
+        progressText.textContent = 'Error';
+        progressCurrent.textContent = 'Failed to upload from URL';
+        progressBar.style.width = '0%';
+        uploadActions.style.display = '';
+      }
+      return;
+    }
+
     const files = fileInput.files;
     if (files.length <= 1) return;
 
