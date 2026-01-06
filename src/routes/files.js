@@ -223,6 +223,9 @@ router.get("/view/:id", async (req, res) => {
       return res.status(403).render("errors/403");
     }
 
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
     res.sendFile(file.path);
   } catch (err) {
     console.error("View error:", err);
