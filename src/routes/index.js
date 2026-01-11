@@ -101,13 +101,18 @@ router.get("/folder/edit/*", requireAuth, async (req, res) => {
     return res.redirect("/");
   }
 
+  const folderDescription = await db("folder_descriptions")
+    .where({ folder: folderPath, ownerId: req.session.userId })
+    .first();
+
   const pathParts = folderPath.split("/");
   const folderName = pathParts[pathParts.length - 1];
 
   res.render("folder/edit", {
-    title: "Rename Folder",
+    title: "Edit Folder",
     folderPath,
-    folderName
+    folderName,
+    description: folderDescription?.description || ""
   });
 });
 
@@ -119,12 +124,15 @@ router.post("/folder/edit/*", requireAuth, async (req, res) => {
   }
 
   const newName = req.body.folderName?.trim();
+  const description = req.body.description?.trim() || null;
+
   if (!newName) {
     const pathParts = folderPath.split("/");
     return res.render("folder/edit", {
-      title: "Rename Folder",
+      title: "Edit Folder",
       folderPath,
       folderName: pathParts[pathParts.length - 1],
+      description: req.body.description || "",
       error: "Folder name is required"
     });
   }
@@ -132,9 +140,10 @@ router.post("/folder/edit/*", requireAuth, async (req, res) => {
   if (newName.includes("/")) {
     const pathParts = folderPath.split("/");
     return res.render("folder/edit", {
-      title: "Rename Folder",
+      title: "Edit Folder",
       folderPath,
       folderName: pathParts[pathParts.length - 1],
+      description: req.body.description || "",
       error: "Folder name cannot contain /"
     });
   }
@@ -164,7 +173,23 @@ router.post("/folder/edit/*", requireAuth, async (req, res) => {
       .update({ folder: newSubfolderPath, updated_at: db.fn.now() });
   }
 
-  res.redirect("/");
+  const existingDescription = await db("folder_descriptions")
+    .where({ folder: folderPath, ownerId: req.session.userId })
+    .first();
+
+  if (existingDescription) {
+    await db("folder_descriptions")
+      .where({ id: existingDescription.id })
+      .update({ folder: newFolderPath, description, updated_at: db.fn.now() });
+  } else if (description) {
+    await db("folder_descriptions").insert({
+      folder: newFolderPath,
+      ownerId: req.session.userId,
+      description
+    });
+  }
+
+  res.redirect("/folder/" + encodeURIComponent(newFolderPath));
 });
 
 router.post("/folder/delete/*", requireAuth, async (req, res) => {
@@ -237,6 +262,14 @@ router.get("/folder/*", async (req, res) => {
     return res.redirect("/");
   }
 
+  const folderDescription = await db("folder_descriptions")
+    .where({ folder: folderPath, ownerId: userId })
+    .first();
+
+  const isOwner = userId && await db("files")
+    .where({ folder: folderPath, ownerId: userId })
+    .first();
+
   const pathParts = folderPath.split("/");
   const breadcrumbs = pathParts.map((part, index) => ({
     name: part,
@@ -250,6 +283,8 @@ router.get("/folder/*", async (req, res) => {
     breadcrumbs,
     subfolders,
     files,
+    folderDescription: folderDescription?.description,
+    isOwner: !!isOwner,
   });
 });
 

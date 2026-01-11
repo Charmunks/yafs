@@ -135,9 +135,65 @@
     dropzone.classList.remove('dragover');
   });
 
-  dropzone.addEventListener('drop', (e) => {
+  let folderUploadData = null;
+
+  async function traverseFileTree(entry, path = '') {
+    const files = [];
+    if (entry.isFile) {
+      const file = await new Promise((resolve) => entry.file(resolve));
+      files.push({ file, relativePath: path + file.name });
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const entries = await new Promise((resolve) => {
+        const allEntries = [];
+        const readEntries = () => {
+          reader.readEntries((results) => {
+            if (results.length === 0) {
+              resolve(allEntries);
+            } else {
+              allEntries.push(...results);
+              readEntries();
+            }
+          });
+        };
+        readEntries();
+      });
+      for (const childEntry of entries) {
+        const childFiles = await traverseFileTree(childEntry, path + entry.name + '/');
+        files.push(...childFiles);
+      }
+    }
+    return files;
+  }
+
+  dropzone.addEventListener('drop', async (e) => {
     e.preventDefault();
     dropzone.classList.remove('dragover');
+    
+    const items = e.dataTransfer.items;
+    if (items && items.length > 0) {
+      const firstItem = items[0];
+      const entry = firstItem.webkitGetAsEntry?.();
+      
+      if (entry && entry.isDirectory) {
+        const folderName = entry.name;
+        const filesInFolder = await traverseFileTree(entry);
+        
+        if (filesInFolder.length > 0) {
+          folderUploadData = {
+            folderName,
+            files: filesInFolder
+          };
+          
+          fileName.textContent = `Folder: ${folderName} (${filesInFolder.length} files)`;
+          dropzone.classList.add('has-file');
+          singleFileFields.forEach(el => el.style.display = 'none');
+          return;
+        }
+      }
+    }
+    
+    folderUploadData = null;
     if (e.dataTransfer.files.length > 0) {
       fileInput.files = e.dataTransfer.files;
       updateFileDisplay();
@@ -163,6 +219,73 @@
   });
 
   form.addEventListener('submit', async (e) => {
+    if (folderUploadData) {
+      e.preventDefault();
+
+      const baseFolder = document.getElementById('folder').value;
+      const visibility = document.querySelector('input[name="visibility"]:checked').value;
+      const isPublic = visibility === 'public';
+      const isUnlisted = visibility === 'unlisted';
+
+      uploadProgress.style.display = 'block';
+      uploadActions.style.display = 'none';
+      dropzone.style.pointerEvents = 'none';
+      dropzone.style.opacity = '0.6';
+
+      const { folderName, files: folderFiles } = folderUploadData;
+      const total = folderFiles.length;
+      let uploaded = 0;
+      let failed = 0;
+
+      for (const { file, relativePath } of folderFiles) {
+        progressCurrent.textContent = `Uploading: ${relativePath}`;
+        progressCount.textContent = `${uploaded} / ${total}`;
+        progressBar.style.width = `${(uploaded / total) * 100}%`;
+
+        const pathParts = relativePath.split('/');
+        pathParts.pop();
+        const subfolderPath = pathParts.join('/');
+        const targetFolder = baseFolder 
+          ? `${baseFolder}/${subfolderPath}` 
+          : subfolderPath;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', targetFolder);
+        formData.append('isPublic', isPublic ? 'true' : 'false');
+        formData.append('isUnlisted', isUnlisted ? 'true' : 'false');
+
+        try {
+          const response = await fetch('/files/upload/single', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (response.ok) {
+            uploaded++;
+          } else {
+            failed++;
+          }
+        } catch (err) {
+          failed++;
+        }
+
+        progressCount.textContent = `${uploaded} / ${total}`;
+        progressBar.style.width = `${(uploaded / total) * 100}%`;
+      }
+
+      progressText.textContent = 'Complete!';
+      progressCurrent.textContent = failed > 0 ? `${failed} file(s) failed to upload` : 'All files uploaded successfully';
+      progressBar.style.width = '100%';
+
+      folderUploadData = null;
+
+      setTimeout(() => {
+        window.location.href = baseFolder ? `/?folder=${encodeURIComponent(baseFolder)}/${encodeURIComponent(folderName)}` : `/?folder=${encodeURIComponent(folderName)}`;
+      }, 1000);
+      return;
+    }
+
     if (activeTab === 'url') {
       e.preventDefault();
       const url = fileUrlInput.value.trim();
@@ -211,6 +334,11 @@
     }
 
     const files = fileInput.files;
+    if (files.length === 0) {
+      e.preventDefault();
+      alert('Please select a file');
+      return;
+    }
     if (files.length <= 1) return;
 
     e.preventDefault();

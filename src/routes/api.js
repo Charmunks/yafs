@@ -11,7 +11,7 @@ router.get("/folders", async (req, res) => {
   const userId = req.session.userId;
 
   if (!userId) {
-    return res.json({ folders: [] });
+    return res.json({ folders: [], tree: [] });
   }
 
   const folders = await db("files")
@@ -20,8 +20,48 @@ router.get("/folders", async (req, res) => {
     .distinct("folder")
     .pluck("folder");
 
-  res.json({ folders: folders.sort() });
+  const sortedFolders = folders.sort();
+
+  const tree = buildFolderTree(sortedFolders);
+
+  res.json({ folders: sortedFolders, tree });
 });
+
+function buildFolderTree(folderPaths) {
+  const tree = [];
+  const nodeMap = new Map();
+
+  for (const path of folderPaths) {
+    const parts = path.split("/");
+    let currentPath = "";
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const parentPath = currentPath;
+      currentPath = currentPath ? `${currentPath}/${part}` : part;
+
+      if (!nodeMap.has(currentPath)) {
+        const node = {
+          name: part,
+          path: currentPath,
+          children: []
+        };
+        nodeMap.set(currentPath, node);
+
+        if (parentPath) {
+          const parent = nodeMap.get(parentPath);
+          if (parent) {
+            parent.children.push(node);
+          }
+        } else {
+          tree.push(node);
+        }
+      }
+    }
+  }
+
+  return tree;
+}
 
 router.get("/search", async (req, res) => {
   const userId = req.session.userId;

@@ -142,24 +142,50 @@
 
 .new-folder-input {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  align-items: center;
   margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--mantle);
+  border-radius: 6px;
+  border: 1px solid var(--surface0);
 }
 
-.new-folder-input input {
+.new-folder-parent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.new-folder-parent label {
+  font-size: 0.85rem;
+  color: var(--subtext0);
+  white-space: nowrap;
+}
+
+.new-folder-parent .folder-select {
+  flex: 1;
+}
+
+.new-folder-input > input {
   flex: 1;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--surface0);
   border-radius: 6px;
-  background-color: var(--mantle);
+  background-color: var(--base);
   color: var(--text);
   font-size: 0.9rem;
 }
 
-.new-folder-input input:focus {
+.new-folder-input > input:focus {
   outline: none;
   border-color: var(--rosewater);
+}
+
+.new-folder-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
 /* Dropzone */

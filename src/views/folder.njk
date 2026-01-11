@@ -2,6 +2,7 @@
 {% from "partials/back-link.njk" import backLink %}
 {% from "partials/file-card.njk" import fileCard, folderCard %}
 {% from "partials/empty-state.njk" import emptyState %}
+{% from "partials/icons.njk" import edit as editIcon %}
 
 {% block content %}
 <div class="files-container">
@@ -22,7 +23,16 @@
         {% endif %}
       {% endfor %}
     </div>
+    {% if isOwner %}
+      <a href="/folder/edit/{{ folderPath | urlencode }}" class="btn btn-icon" title="Edit folder">
+        {{ editIcon(18) }}
+      </a>
+    {% endif %}
   </div>
+
+  {% if folderDescription %}
+    <p class="folder-description">{{ folderDescription }}</p>
+  {% endif %}
 
   {% if subfolders.length > 0 or files.length > 0 %}
     <div class="files-grid">

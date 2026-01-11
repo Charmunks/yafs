@@ -7,7 +7,7 @@
   <div class="upload-card">
     <div class="upload-header">
       {{ editIcon(48) }}
-      <h1>Rename Folder</h1>
+      <h1>Edit Folder</h1>
     </div>
 
     {{ errorMessage(error) }}
@@ -18,8 +18,13 @@
         <input type="text" id="folderName" name="folderName" value="{{ folderName }}" required>
       </div>
 
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3" placeholder="Add a description for this folder...">{{ description }}</textarea>
+      </div>
+
       <div class="upload-actions">
-        <a href="/" class="btn btn-secondary">Cancel</a>
+        <a href="/folder/{{ folderPath | urlencode }}" class="btn btn-secondary">Cancel</a>
         <button type="submit" class="btn btn-primary">
           {{ check(18) }}
           Save

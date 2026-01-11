@@ -11,9 +11,17 @@
   </div>
   <input type="hidden" id="folder" name="folder" value="{{ currentFolder }}">
   <div id="newFolderInput" class="new-folder-input" style="display: none;">
-    <input type="text" id="newFolderName" placeholder="Enter folder path (e.g., photos/vacation)">
-    <button type="button" id="confirmNewFolder" class="btn btn-primary btn-small">Add</button>
-    <button type="button" id="cancelNewFolder" class="btn btn-secondary btn-small">Cancel</button>
+    <div class="new-folder-parent">
+      <label for="parentFolderSelect">Create in:</label>
+      <select id="parentFolderSelect" class="folder-select">
+        <option value="">Root</option>
+      </select>
+    </div>
+    <input type="text" id="newFolderName" placeholder="New folder name">
+    <div class="new-folder-actions">
+      <button type="button" id="confirmNewFolder" class="btn btn-primary btn-small">Add</button>
+      <button type="button" id="cancelNewFolder" class="btn btn-secondary btn-small">Cancel</button>
+    </div>
   </div>
 </div>
 {% endmacro %}
@@ -22,6 +30,7 @@
 <script>
   (function() {
     const folderSelect = document.getElementById('folderSelect');
+    const parentFolderSelect = document.getElementById('parentFolderSelect');
     const folderInput = document.getElementById('folder');
     const newFolderBtn = document.getElementById('newFolderBtn');
     const newFolderInput = document.getElementById('newFolderInput');
@@ -29,24 +38,33 @@
     const confirmNewFolder = document.getElementById('confirmNewFolder');
     const cancelNewFolder = document.getElementById('cancelNewFolder');
     const currentFolder = '{{ currentFolder }}';
+    let allFolders = [];
+
+    function renderFolderOptions(select, folders, selectedValue, includeRoot = true) {
+      select.innerHTML = includeRoot ? '<option value="">Root (no folder)</option>' : '<option value="">Root</option>';
+      for (const folder of folders) {
+        const option = document.createElement('option');
+        option.value = folder;
+        const depth = (folder.match(/\//g) || []).length;
+        option.textContent = '\u00A0\u00A0'.repeat(depth) + folder.split('/').pop();
+        option.title = folder;
+        if (folder === selectedValue) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      }
+    }
 
     async function loadFolders() {
       try {
         const response = await fetch('/api/folders');
         const data = await response.json();
+        allFolders = data.folders;
         
-        folderSelect.innerHTML = '<option value="">Root (no folder)</option>';
-        for (const folder of data.folders) {
-          const option = document.createElement('option');
-          option.value = folder;
-          option.textContent = folder;
-          if (folder === currentFolder) {
-            option.selected = true;
-          }
-          folderSelect.appendChild(option);
-        }
+        renderFolderOptions(folderSelect, allFolders, currentFolder);
+        renderFolderOptions(parentFolderSelect, allFolders, '', false);
         
-        if (currentFolder && !data.folders.includes(currentFolder)) {
+        if (currentFolder && !allFolders.includes(currentFolder)) {
           const option = document.createElement('option');
           option.value = currentFolder;
           option.textContent = currentFolder;
@@ -66,29 +84,34 @@
 
     newFolderBtn.addEventListener('click', () => {
       newFolderInput.style.display = 'flex';
+      renderFolderOptions(parentFolderSelect, allFolders, '', false);
       newFolderName.focus();
     });
 
     cancelNewFolder.addEventListener('click', () => {
       newFolderInput.style.display = 'none';
       newFolderName.value = '';
+      parentFolderSelect.value = '';
     });
 
     confirmNewFolder.addEventListener('click', () => {
-      const folderPath = newFolderName.value.trim().replace(/^\/+|\/+$/g, '');
-      if (folderPath) {
-        const exists = Array.from(folderSelect.options).some(opt => opt.value === folderPath);
-        if (!exists) {
-          const option = document.createElement('option');
-          option.value = folderPath;
-          option.textContent = folderPath;
-          folderSelect.appendChild(option);
+      const folderName = newFolderName.value.trim().replace(/[\/\\]/g, '');
+      if (folderName) {
+        const parentPath = parentFolderSelect.value;
+        const fullPath = parentPath ? `${parentPath}/${folderName}` : folderName;
+        
+        if (!allFolders.includes(fullPath)) {
+          allFolders.push(fullPath);
+          allFolders.sort();
         }
-        folderSelect.value = folderPath;
-        folderInput.value = folderPath;
+        
+        renderFolderOptions(folderSelect, allFolders, fullPath);
+        folderSelect.value = fullPath;
+        folderInput.value = fullPath;
       }
       newFolderInput.style.display = 'none';
       newFolderName.value = '';
+      parentFolderSelect.value = '';
     });
 
     newFolderName.addEventListener('keydown', (e) => {
@@ -106,7 +129,7 @@
 {% macro dropzone() %}
 {% from "partials/icons.njk" import uploadArrow %}
 <div class="dropzone" id="dropzone">
-  <input type="file" id="file" name="files" multiple required>
+  <input type="file" id="file" name="files" multiple>
   <div class="dropzone-content">
     {{ uploadArrow(40) }}
     <span class="dropzone-text">Drag & drop your file(s) here</span>
