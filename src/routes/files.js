@@ -205,6 +205,14 @@ router.post("/upload/single", requireAuth, upload.single("file"), async (req, re
   }
 });
 
+router.options("/view/:id", (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+  res.set("Cross-Origin-Resource-Policy", "cross-origin");
+  res.sendStatus(204);
+});
+
 router.get("/view/:id", async (req, res) => {
   try {
     if (!isValidId(req.params.id)) {
