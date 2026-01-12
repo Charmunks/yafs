@@ -262,13 +262,18 @@ router.get("/folder/*", async (req, res) => {
     return res.redirect("/");
   }
 
-  const folderDescription = await db("folder_descriptions")
-    .where({ folder: folderPath, ownerId: userId })
-    .first();
+  let folderDescription = null;
+  let isOwner = false;
 
-  const isOwner = userId && await db("files")
-    .where({ folder: folderPath, ownerId: userId })
-    .first();
+  if (userId) {
+    folderDescription = await db("folder_descriptions")
+      .where({ folder: folderPath, ownerId: userId })
+      .first();
+
+    isOwner = !!(await db("files")
+      .where({ folder: folderPath, ownerId: userId })
+      .first());
+  }
 
   const pathParts = folderPath.split("/");
   const breadcrumbs = pathParts.map((part, index) => ({
