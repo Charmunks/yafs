@@ -1,7 +1,22 @@
 import express from "express";
+import multer from "multer";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
 import db from "../db/index.js";
 
 const router = express.Router();
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, process.env.UPLOAD_DIR || "uploads");
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${uuidv4()}${ext}`);
+  }
+});
+
+const upload = multer({ storage });
 
 router.get("/health", (req, res) => {
   res.json({ status: "ok" });
@@ -99,6 +114,41 @@ router.get("/search", async (req, res) => {
   }
 
   res.json({ files });
+});
+
+router.post("/upload", upload.array("files"), async (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: "No files provided" });
+  }
+
+  const folder = req.body.folder || null;
+  const isPublic = req.body.isPublic === "true" || req.body.isPublic === true;
+  const description = req.body.description || null;
+
+  const uploadedFiles = [];
+
+  for (const file of req.files) {
+    const [inserted] = await db("files")
+      .insert({
+        filename: file.originalname,
+        folder: folder,
+        path: file.filename,
+        ownerId: userId,
+        isPublic: isPublic,
+        description: description
+      })
+      .returning("*");
+
+    uploadedFiles.push(inserted);
+  }
+
+  res.json({ success: true, files: uploadedFiles });
 });
 
 export default router;
