@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { v4 as uuidv4 } from "uuid";
+import crypto from "crypto";
 import db from "../db/index.js";
 
 const router = express.Router();
@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    cb(null, `${uuidv4()}${ext}`);
+    cb(null, `${crypto.randomUUID()}${ext}`);
   }
 });
 
