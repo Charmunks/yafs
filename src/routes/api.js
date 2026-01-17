@@ -1,18 +1,48 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import crypto from "crypto";
+import fs from "fs";
+import os from "os";
 import db from "../db/index.js";
 
 const router = express.Router();
 
+async function getStoragePath() {
+  const setting = await db("settings").where({ key: "storage_path" }).first();
+  return setting?.value || path.join(os.homedir(), "files");
+}
+
+function getEffectiveUserId(req) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.slice(7);
+    if (process.env.API_TOKEN && token === process.env.API_TOKEN) {
+      return process.env.API_USER_ID ? parseInt(process.env.API_USER_ID, 10) : null;
+    }
+    return null;
+  }
+  return req.session.userId;
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, process.env.UPLOAD_DIR || "uploads");
+    const userId = getEffectiveUserId(req);
+    if (!userId) {
+      return cb(new Error("Authentication required"));
+    }
+    getStoragePath()
+      .then((storagePath) => {
+        const userFolder = path.join(storagePath, String(userId));
+        fs.mkdirSync(userFolder, { recursive: true });
+        cb(null, userFolder);
+      })
+      .catch((err) => cb(err));
   },
   filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
-    cb(null, `${crypto.randomUUID()}${ext}`);
+    const name = path.basename(file.originalname, ext);
+    cb(null, `${name}-${uniqueSuffix}${ext}`);
   }
 });
 
@@ -117,22 +147,18 @@ router.get("/search", async (req, res) => {
 });
 
 router.post("/upload", upload.array("files"), async (req, res) => {
-  let userId = null;
+  const userId = getEffectiveUserId(req);
+
+  if (!userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
 
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
-    if (process.env.API_TOKEN && token === process.env.API_TOKEN) {
-      userId = process.env.API_USER_ID ? parseInt(process.env.API_USER_ID, 10) : null;
-    } else {
+    if (!process.env.API_TOKEN || token !== process.env.API_TOKEN) {
       return res.status(401).json({ error: "Invalid API token" });
     }
-  } else {
-    userId = req.session.userId;
-  }
-
-  if (!userId) {
-    return res.status(401).json({ error: "Authentication required" });
   }
 
   if (!req.files || req.files.length === 0) {
@@ -146,11 +172,12 @@ router.post("/upload", upload.array("files"), async (req, res) => {
   const uploadedFiles = [];
 
   for (const file of req.files) {
+    const relativePath = `${userId}/${file.filename}`;
     const [inserted] = await db("files")
       .insert({
         filename: file.originalname,
         folder: folder,
-        path: file.filename,
+        path: relativePath,
         ownerId: userId,
         isPublic: isPublic,
         description: description
