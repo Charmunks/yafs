@@ -172,12 +172,11 @@ router.post("/upload", upload.array("files"), async (req, res) => {
   const uploadedFiles = [];
 
   for (const file of req.files) {
-    const relativePath = `${userId}/${file.filename}`;
     const [inserted] = await db("files")
       .insert({
         filename: file.originalname,
         folder: folder,
-        path: relativePath,
+        path: file.path,
         ownerId: userId,
         isPublic: isPublic,
         description: description
