@@ -117,7 +117,19 @@ router.get("/search", async (req, res) => {
 });
 
 router.post("/upload", upload.array("files"), async (req, res) => {
-  const userId = req.session.userId;
+  let userId = null;
+
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.slice(7);
+    if (process.env.API_TOKEN && token === process.env.API_TOKEN) {
+      userId = process.env.API_USER_ID ? parseInt(process.env.API_USER_ID, 10) : null;
+    } else {
+      return res.status(401).json({ error: "Invalid API token" });
+    }
+  } else {
+    userId = req.session.userId;
+  }
 
   if (!userId) {
     return res.status(401).json({ error: "Authentication required" });
