@@ -57,7 +57,8 @@ const limiter = rateLimit({
   windowMs: 1000,
   limit: 5,
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => req.path.startsWith('/files/thumb/') || req.path.startsWith('/files/view/')
 });
 app.use(limiter);
 

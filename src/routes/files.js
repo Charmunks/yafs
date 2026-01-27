@@ -278,8 +278,7 @@ router.get("/thumb/:id", async (req, res) => {
       .resize(width, null, { withoutEnlargement: true })
       .webp({ quality });
 
-    pipeline.on('error', (err) => {
-      console.error("Thumbnail generation error:", err);
+    pipeline.on('error', () => {
       if (!res.headersSent) {
         res.status(500).send("Failed to generate thumbnail");
       }
