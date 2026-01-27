@@ -156,6 +156,10 @@ nav a:hover {
   border-bottom: 1px solid var(--surface0);
 }
 
+.feature-section:first-of-type {
+  border-top: 1px solid var(--surface0);
+}
+
 .feature-section:last-child {
   border-bottom: none;
 }
