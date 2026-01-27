@@ -389,12 +389,13 @@ router.post("/edit/:id", requireAuth, async (req, res) => {
       });
     }
 
+    const visibility = req.body.visibility || "private";
     await db("files").where({ id: req.params.id }).update({
       filename,
       description,
       folder,
-      isPublic: req.body.isPublic === "true",
-      isUnlisted: req.body.isUnlisted === "true",
+      isPublic: visibility === "public",
+      isUnlisted: visibility === "unlisted",
       updated_at: db.fn.now()
     });
 

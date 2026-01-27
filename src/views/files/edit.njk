@@ -1,6 +1,6 @@
 {% extends "base.njk" %}
 {% from "partials/icons.njk" import edit as editIcon, check %}
-{% from "partials/forms.njk" import folderPicker, folderPickerScript, publicToggle, unlistedToggle, errorMessage %}
+{% from "partials/forms.njk" import folderPicker, folderPickerScript, visibilitySwitcher, errorMessage %}
 
 {% block content %}
 <div class="upload-container">
@@ -24,8 +24,7 @@
       </div>
 
       {{ folderPicker(file.folder or '') }}
-      {{ publicToggle(file.isPublic) }}
-      {{ unlistedToggle(file.isUnlisted) }}
+      {{ visibilitySwitcher('public' if file.isPublic else ('unlisted' if file.isUnlisted else 'private')) }}
 
       <div class="upload-actions">
         <a href="/files/{{ file.id }}" class="btn btn-secondary">Cancel</a>
