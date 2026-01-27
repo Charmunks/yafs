@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAFS - Yet Another File Server</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">YAFS</div>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="https://github.com/Charmunks/yafs">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Yet Another <span>File Server</span></h1>
+      <p>A modern web UI for managing, viewing, and sharing your files hosted in the cloud or on your own server.</p>
+      <a href="/login" class="btn">Get Started</a>
+      <a href="https://github.com/Charmunks/yafs" class="btn btn-secondary">View on GitHub</a>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <h2>Features</h2>
+      <p class="features-intro">Everything you need to manage, view, and share your files from anywhere.</p>
+
+
+      <div class="feature-section">
+        <div class="feature-content">
+          <h3>Drag and Drop Uploading.</h3>
+          <p>Upload files directly from your browser.</p>
+          <ul class="feature-list">
+            <li>Upload multiple files at once</li>
+            <li>Set file visibility</li>
+            <li>Upload files from URL</li>
+          </ul>
+        </div>
+        <div class="feature-screenshot">
+          <img src="screenshots/upload.png" alt="Drag and drop uploading">
+        </div>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-content">
+          <h3>Folder-Based File Management</h3>
+          <p>Keep your files organized with an intuitive folder structure.</p>
+          <ul class="feature-list">
+            <li>Create and manage folders</li>
+            <li>Drag and drop file organization</li>
+            <li>Quick search across all files</li>
+          </ul>
+        </div>
+        <div class="feature-screenshot">
+          <img src="screenshots/folder.png" alt="Folder view">
+        </div>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-content">
+          <h3>Share Files Instantly</h3>
+          <p>Make any file public with a single click and share it with anyone. Generate clean, shareable links that work without requiring recipients to create an account.</p>
+          <ul class="feature-list">
+            <li>One-click public/private toggle</li>
+            <li>Clean shareable URLs</li>
+            <li>No account required for viewers</li>
+          </ul>
+        </div>
+        <div class="feature-screenshot">
+          <img src="screenshots/share.png" alt="Share dialog">
+        </div>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-content">
+          <h3>View Files In-Browser</h3>
+          <p>Preview images, documents, and text files directly in your browser without downloading. Displays images and videos and renders markdown beautifully.</p>
+          <ul class="feature-list">
+            <li>Image viewing in browser</li>
+            <li>Video previews</li>
+            <li>Markdown rendering</li>
+          </ul>
+        </div>
+        <div class="feature-screenshot">
+          <img src="screenshots/file.png" alt="File preview">
+        </div>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-content">
+          <h3>Secure by Default</h3>
+          <p>Your files are private until you decide to share them. User authentication with bcrypt password hashing and secure session management keeps your data safe.</p>
+          <ul class="feature-list">
+            <li>bcrypt password hashing</li>
+            <li>Secure session tokens</li>
+            <li>Private-first file storage</li>
+          </ul>
+        </div>
+        <div class="feature-screenshot">
+          <img src="screenshots/login.png" alt="Login page">
+        </div>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-content">
+          <h3>Beautiful Light &amp; Dark Themes</h3>
+          <p>Enjoy a clean, modern interface with the Catppuccin color palette. Automatic theme detection respects your system preferences, or switch manually anytime.</p>
+          <ul class="feature-list">
+            <li>Catppuccin Latte (light) and Mocha (dark)</li>
+            <li>Automatic system preference detection</li>
+            <li>Manual theme toggle</li>
+          </ul>
+        </div>
+        <div class="feature-screenshot">
+          <div class="image-compare">
+            <img src="screenshots/theme-light.png" alt="Light theme" class="image-compare-left">
+            <img src="screenshots/theme-dark.png" alt="Dark theme" class="image-compare-right">
+            <div class="image-compare-slider">
+              <div class="image-compare-handle"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-section">
+        <div class="feature-content">
+          <h3>Self-Host with Docker</h3>
+          <p>Deploy YAFS on your own server in minutes with Docker. Full control over your data and infrastructure. No vendor lock-in, no monthly fees.</p>
+          <ul class="feature-list">
+            <li>Single Docker container deployment</li>
+            <li>PostgreSQL database</li>
+            <li>Environment-based configuration</li>
+          </ul>
+        </div>
+        <div class="feature-screenshot">
+          <img src="screenshots/docker.png" alt="Docker setup">
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="cta">
+    <div class="container">
+      <h2>Ready to host your files?</h2>
+      <p>Get started with YAFS in minutes. Self-host with Docker or deploy to your favorite platform.</p>
+      <a href="https://github.com/Charmunks/yafs" class="btn">View Setup Guide</a>
+    </div>
+  </section>
+
+  <script>
+    document.querySelectorAll('.image-compare').forEach(container => {
+      const leftImg = container.querySelector('.image-compare-left');
+      const slider = container.querySelector('.image-compare-slider');
+      let isDragging = false;
+
+      function updatePosition(x) {
+        const rect = container.getBoundingClientRect();
+        let position = (x - rect.left) / rect.width;
+        position = Math.max(0, Math.min(1, position));
+        const percent = position * 100;
+        leftImg.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
+        slider.style.left = `${percent}%`;
+      }
+
+      container.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        updatePosition(e.clientX);
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          updatePosition(e.clientX);
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      container.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        updatePosition(e.touches[0].clientX);
+      });
+
+      container.addEventListener('touchmove', (e) => {
+        if (isDragging) {
+          updatePosition(e.touches[0].clientX);
+          e.preventDefault();
+        }
+      });
+
+      container.addEventListener('touchend', () => {
+        isDragging = false;
+      });
+    });
+  </script>
+</body>
+</html>
