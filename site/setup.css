@@ -1,0 +1,180 @@
+/* Setup Guide Styles */
+
+.setup-content {
+  padding: 4rem 0;
+  background-color: var(--mantle);
+}
+
+.setup-content .container {
+  display: flex;
+  gap: 4rem;
+}
+
+/* Setup Navigation */
+.setup-nav {
+  position: sticky;
+  top: 2rem;
+  align-self: flex-start;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.setup-nav-item {
+  padding: 0.75rem 1rem;
+  color: var(--subtext0);
+  border-left: 2px solid var(--surface0);
+  transition: all 0.2s;
+}
+
+.setup-nav-item:hover {
+  color: var(--rosewater);
+  border-left-color: var(--rosewater);
+  text-decoration: none;
+}
+
+/* Setup Sections */
+.setup-sections {
+  flex: 1;
+  max-width: 800px;
+}
+
+.setup-section {
+  padding-bottom: 3rem;
+  margin-bottom: 3rem;
+  border-bottom: 1px solid var(--surface0);
+}
+
+.setup-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.setup-section h2 {
+  font-size: 1.75rem;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.setup-section h3 {
+  font-size: 1.1rem;
+  color: var(--subtext1);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.setup-section p {
+  color: var(--subtext0);
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.setup-section code {
+  background-color: var(--surface0);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  color: var(--rosewater);
+}
+
+/* Code Blocks */
+.setup-section pre {
+  background-color: var(--crust);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.setup-section pre code {
+  background: none;
+  padding: 0;
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Environment Table */
+.env-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.env-table th,
+.env-table td {
+  text-align: left;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--surface0);
+}
+
+.env-table th {
+  background-color: var(--surface0);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.env-table th:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.env-table th:last-child {
+  border-radius: 0 8px 0 0;
+}
+
+.env-table td {
+  color: var(--subtext0);
+}
+
+.env-table tr:last-child td {
+  border-bottom: none;
+}
+
+.env-table tr:last-child td:first-child {
+  border-radius: 0 0 0 8px;
+}
+
+.env-table tr:last-child td:last-child {
+  border-radius: 0 0 8px 0;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .setup-content .container {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .setup-nav {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    min-width: auto;
+  }
+
+  .setup-nav-item {
+    border-left: none;
+    border-bottom: 2px solid var(--surface0);
+    padding: 0.5rem 1rem;
+  }
+
+  .setup-nav-item:hover {
+    border-left: none;
+    border-bottom-color: var(--rosewater);
+  }
+}
+
+@media (max-width: 768px) {
+  .env-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .setup-section pre {
+    padding: 0.875rem 1rem;
+  }
+}

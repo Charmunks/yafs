@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Guide - YAFS</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="setup.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="/" class="logo">YAFS</a>
+      <nav>
+        <a href="/#features">Features</a>
+        <a href="/setup">Setup</a>
+        <a href="https://github.com/Charmunks/yafs">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Setup <span>Guide</span></h1>
+      <p>Get YAFS up and running in minutes. Choose your preferred installation method below.</p>
+    </div>
+  </section>
+
+  <section class="setup-content">
+    <div class="container">
+      <div class="setup-nav">
+        <a href="#prerequisites" class="setup-nav-item">Prerequisites</a>
+        <a href="#docker" class="setup-nav-item">Docker</a>
+        <a href="#docker-compose" class="setup-nav-item">Docker Compose</a>
+        <a href="#manual" class="setup-nav-item">Manual Setup</a>
+        <a href="#environment" class="setup-nav-item">Environment Variables</a>
+      </div>
+
+      <div class="setup-sections">
+        <section class="setup-section" id="prerequisites">
+          <h2>Prerequisites</h2>
+          <p>Before installing YAFS, make sure you have the following:</p>
+          <ul class="feature-list">
+            <li>Node.js 20+ (for manual setup)</li>
+            <li>PostgreSQL database</li>
+            <li>Docker (for containerized deployment)</li>
+          </ul>
+        </section>
+
+        <section class="setup-section" id="docker">
+          <h2>Docker Setup</h2>
+          <p>The fastest way to get started with YAFS.</p>
+
+          <h3>1. Build the image</h3>
+          <pre><code>docker build -t yafs .</code></pre>
+
+          <h3>2. Run with Docker</h3>
+          <pre><code>docker run -d \
+  -p 3000:3000 \
+  -e DATABASE_URL=postgresql://user:password@host:5432/yafs \
+  -e SESSION_SECRET=your-secret-key \
+  -e API_TOKEN=your-api-token \
+  -e API_USER_ID=1 \
+  -v /path/to/uploads:/app/uploads \
+  yafs</code></pre>
+        </section>
+
+        <section class="setup-section" id="docker-compose">
+          <h2>Docker Compose</h2>
+          <p>Recommended for production deployments with a bundled PostgreSQL database.</p>
+
+          <h3>docker-compose.yml</h3>
+          <pre><code>version: '3.8'
+
+services:
+  yafs:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://yafs:yafs@db:5432/yafs
+      - SESSION_SECRET=change-this-in-production
+      - API_TOKEN=your-api-token
+      - API_USER_ID=1
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=yafs
+      - POSTGRES_PASSWORD=yafs
+      - POSTGRES_DB=yafs
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  uploads:
+  pgdata:</code></pre>
+
+          <h3>Run with Docker Compose</h3>
+          <pre><code>docker compose up -d</code></pre>
+        </section>
+
+        <section class="setup-section" id="manual">
+          <h2>Manual Setup</h2>
+          <p>For development or custom deployments.</p>
+
+          <h3>1. Clone the repository</h3>
+          <pre><code>git clone https://github.com/Charmunks/yafs.git
+cd yafs</code></pre>
+
+          <h3>2. Install dependencies</h3>
+          <pre><code>npm install</code></pre>
+
+          <h3>3. Create environment file</h3>
+          <pre><code>cp .env.example .env</code></pre>
+          <p>Edit the <code>.env</code> file with your database credentials and secrets.</p>
+
+          <h3>4. Run database migrations</h3>
+          <pre><code>npm run migrate</code></pre>
+
+          <h3>5. Start the server</h3>
+          <pre><code># Production
+npm start
+
+# Development with auto-reload
+npm run dev</code></pre>
+        </section>
+
+        <section class="setup-section" id="environment">
+          <h2>Environment Variables</h2>
+          <p>Configure YAFS using the following environment variables:</p>
+
+          <table class="env-table">
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>PORT</code></td>
+                <td>Server port (default: 3000)</td>
+              </tr>
+              <tr>
+                <td><code>DATABASE_URL</code></td>
+                <td>PostgreSQL connection string</td>
+              </tr>
+              <tr>
+                <td><code>SESSION_SECRET</code></td>
+                <td>Secret key for session encryption</td>
+              </tr>
+              <tr>
+                <td><code>API_TOKEN</code></td>
+                <td>Token for programmatic file uploads</td>
+              </tr>
+              <tr>
+                <td><code>API_USER_ID</code></td>
+                <td>User ID associated with API uploads</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <h2>Need help?</h2>
+      <p>Check out the GitHub repository for issues, discussions, and more documentation.</p>
+      <a href="https://github.com/Charmunks/yafs" class="btn">View on GitHub</a>
+    </div>
+  </section>
+</body>
+</html>
