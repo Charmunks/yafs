@@ -264,7 +264,7 @@ router.get("/thumb/:id", async (req, res) => {
     const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
 
     if (!supportedFormats.includes(ext)) {
-      return res.sendFile(file.path);
+      return res.status(404).send("No thumbnail available");
     }
 
     const widthParam = parseInt(req.query.w, 10);
@@ -273,11 +273,19 @@ router.get("/thumb/:id", async (req, res) => {
     const quality = Number.isFinite(qualityParam) ? Math.min(Math.max(qualityParam, 10), 90) : 70;
 
     res.type('webp');
-    sharp(file.path)
+    const pipeline = sharp(file.path)
       .rotate()
       .resize(width, null, { withoutEnlargement: true })
-      .webp({ quality })
-      .pipe(res);
+      .webp({ quality });
+
+    pipeline.on('error', (err) => {
+      console.error("Thumbnail generation error:", err);
+      if (!res.headersSent) {
+        res.status(500).send("Failed to generate thumbnail");
+      }
+    });
+
+    pipeline.pipe(res);
   } catch (err) {
     console.error("Thumbnail error:", err);
     res.status(500).send("Failed to generate thumbnail");
